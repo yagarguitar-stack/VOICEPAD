@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>ボイスパッド</title>
+<style>
+:root{
+  --chassis:#141318;
+  --panel:#1e1d23;
+  --panel-hi:#2a2932;
+  --line:#35333d;
+  --ink:#eae6df;
+  --dim:#8c8794;
+  --c0:#f2a33c;
+  --c1:#e4695e;
+  --c2:#56c3a0;
+  --c3:#5aa9e6;
+  --c4:#ad8ce8;
+  --c5:#c3d456;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;margin:0;}
+body{
+  background:var(--chassis);
+  color:var(--ink);
+  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
+  overflow:hidden;
+  user-select:none;-webkit-user-select:none;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+  display:flex;flex-direction:column;
+}
+button{font-family:inherit;color:inherit;border:none;background:none;cursor:pointer;}
+
+/* ---------- header ---------- */
+#bar{
+  flex:0 0 auto;display:flex;align-items:center;gap:10px;
+  padding:9px 12px;background:var(--panel);
+  border-bottom:1px solid var(--line);
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset;
+}
+.seg{display:flex;background:var(--chassis);border:1px solid var(--line);border-radius:9px;overflow:hidden;}
+.seg button{padding:7px 13px;font-size:14px;color:var(--dim);letter-spacing:.02em;}
+.seg button.on{background:var(--panel-hi);color:var(--ink);}
+.tool{
+  padding:8px 13px;font-size:14px;border:1px solid var(--line);
+  border-radius:9px;background:var(--chassis);color:var(--dim);
+}
+.tool.on{background:var(--c0);border-color:var(--c0);color:#241a08;font-weight:600;}
+#stopAll{color:var(--c1);border-color:#4a2b2c;}
+#stopAll:active{background:var(--c1);color:#2a100e;}
+.spacer{flex:1 1 auto;}
+.vol{display:flex;align-items:center;gap:8px;}
+.vol span{font-size:12px;color:var(--dim);}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:110px;height:22px;background:transparent;
+}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--line);border-radius:2px;}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:20px;height:20px;margin-top:-8px;border-radius:50%;
+  background:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.6);
+}
+input[type=range]::-moz-range-track{height:4px;background:var(--line);border-radius:2px;}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border:none;border-radius:50%;background:var(--ink);}
+
+#bar2{
+  flex:0 0 auto;display:flex;align-items:center;gap:8px;
+  padding:7px 12px;background:var(--chassis);
+  border-bottom:1px solid var(--line);
+}
+#bar2 .cap{font-size:12px;color:var(--dim);}
+#bar2 select{
+  width:auto;min-width:160px;max-width:44vw;padding:7px 10px;font-size:14px;
+  border-radius:9px;background:var(--panel);border:1px solid var(--line);color:var(--ink);
+}
+.tool.sm{padding:7px 11px;font-size:13px;}
+#dirty{
+  font-size:11px;color:#241a08;background:var(--c0);
+  padding:3px 8px;border-radius:20px;font-weight:600;
+}
+#dirty[hidden]{display:none;}
+
+/* ---------- pads ---------- */
+#grid{
+  flex:1 1 auto;display:grid;gap:10px;padding:12px;min-height:0;
+}
+#grid.dense{gap:6px;padding:8px;}
+.pad{
+  position:relative;border-radius:14px;
+  background:linear-gradient(180deg,var(--panel-hi),#191820);
+  border:1px solid var(--line);
+  box-shadow:0 3px 0 #0d0c11, 0 6px 14px rgba(0,0,0,.45), 0 1px 0 rgba(255,255,255,.05) inset;
+  display:flex;align-items:center;justify-content:center;
+  padding:8px;text-align:center;
+  transition:transform .05s ease, box-shadow .05s ease, background .12s ease;
+  overflow:hidden;touch-action:none;
+}
+.pad::after{
+  content:"";position:absolute;inset:0;border-radius:13px;
+  border:2px solid var(--hue);opacity:.5;pointer-events:none;
+}
+.pad .label{
+  font-size:clamp(13px,2.4vw,21px);font-weight:600;line-height:1.25;
+  word-break:break-word;color:var(--ink);
+}
+#grid.dense .pad{border-radius:10px;padding:4px;}
+#grid.dense .pad .label{font-size:clamp(11px,1.5vw,16px);}
+#grid.dense .badge{font-size:9px;top:3px;right:5px;}
+.pad.empty{background:#17161c;box-shadow:none;border-style:dashed;}
+.pad.empty::after{opacity:.12;}
+.pad.empty .label{color:#55515c;font-weight:400;}
+.pad.hit{
+  background:var(--hue);
+  transform:translateY(3px);
+  box-shadow:0 0 0 #0d0c11, 0 0 26px var(--hue), 0 2px 6px rgba(0,0,0,.5) inset;
+}
+.pad.hit .label{color:#16140f;}
+.pad.hit::after{opacity:1;}
+body.editing .pad{border-style:dashed;}
+body.editing .pad .label::after{content:"";}
+.pad.drag{opacity:.35;}
+.pad.over{outline:3px solid var(--ink);outline-offset:-3px;}
+.badge{
+  position:absolute;top:6px;right:8px;font-size:11px;color:var(--dim);
+}
+
+/* ---------- footer ---------- */
+#foot{
+  flex:0 0 auto;padding:5px 14px 9px;font-size:11px;color:#5f5a68;
+  display:flex;justify-content:space-between;gap:10px;
+}
+#foot b{font-weight:500;color:#7a7484;}
+
+/* ---------- overlays ---------- */
+.screen{
+  position:fixed;inset:0;z-index:50;background:rgba(10,9,13,.88);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.screen[hidden]{display:none;}
+.card{
+  width:min(560px,100%);max-height:86vh;overflow:auto;
+  background:var(--panel);border:1px solid var(--line);border-radius:18px;
+  padding:22px 22px 18px;box-shadow:0 18px 50px rgba(0,0,0,.6);
+}
+.card h1{font-size:26px;margin:0 0 6px;letter-spacing:.03em;}
+.card h2{font-size:17px;margin:18px 0 6px;color:var(--c0);}
+.card p,.card li{font-size:14px;line-height:1.75;color:#c9c4ce;margin:6px 0;}
+.card code{background:var(--chassis);padding:2px 6px;border-radius:5px;font-size:13px;color:var(--c2);}
+.card ol,.card ul{padding-left:1.25em;margin:6px 0;}
+.big{
+  display:block;width:100%;margin-top:18px;padding:16px;border-radius:12px;
+  background:var(--c0);color:#241a08;font-size:17px;font-weight:700;
+}
+.big:disabled{background:var(--line);color:var(--dim);}
+.row{display:flex;gap:10px;margin-top:14px;}
+.row .tool{flex:1;text-align:center;padding:12px;}
+label.f{display:block;font-size:12px;color:var(--dim);margin:14px 0 5px;}
+input[type=text],select{
+  width:100%;padding:11px 12px;font-size:16px;border-radius:10px;
+  background:var(--chassis);border:1px solid var(--line);color:var(--ink);
+}
+.swatches{display:flex;gap:9px;flex-wrap:wrap;}
+.sw{width:38px;height:38px;border-radius:10px;border:2px solid transparent;}
+.sw.on{border-color:var(--ink);}
+.note{font-size:12px;color:#7a7484;margin-top:14px;line-height:1.7;}
+#loadState{font-size:13px;color:var(--dim);margin-top:14px;min-height:1.2em;}
+.err{color:var(--c1);}
+</style>
+</head>
+<body>
+
+<!-- =======================================================================
+     音声ファイルの一覧
+     voices フォルダに入れた音声ファイルの名前をここに並べます。
+     拡張子を除いた部分が、そのままパッドの最初の表示名になります。
+     音声を増やすときは、この中に1行足してください。
+     ======================================================================= -->
+<script>
+const VOICE_DIR = "voices/";
+const VOICE_EXT = ".wav";
+
+// 上から順に 01.wav, 02.wav, 03.wav … と対応します。
+// name … パッドに出る文字
+// color … オレンジ／赤／緑／青／紫／黄緑
+// 音声を増やすときは、末尾に1行足して、同じ番号のファイルを voices に入れてください。
+const VOICE_LIST = [
+  { name:"イントロ",     color:"オレンジ" },  // 01
+  { name:"Aメロ",        color:"オレンジ" },  // 02
+  { name:"Bメロ",        color:"オレンジ" },  // 03
+  { name:"Cメロ",        color:"オレンジ" },  // 04
+  { name:"Dメロ",        color:"オレンジ" },  // 05
+  { name:"Eメロ",        color:"オレンジ" },  // 06
+  { name:"Fメロ",        color:"オレンジ" },  // 07
+  { name:"Gメロ",        color:"オレンジ" },  // 08
+  { name:"Hメロ",        color:"オレンジ" },  // 09
+  { name:"Iメロ",        color:"オレンジ" },  // 10
+  { name:"ギターソロ",   color:"緑"       },  // 11
+  { name:"リピート",     color:"青"       },  // 12
+  { name:"ダルセーニョ", color:"青"       },  // 13
+  { name:"ダカーポ",     color:"青"       },  // 14
+  { name:"コーダへ",     color:"青"       },  // 15
+  { name:"リット",       color:"青"       },  // 16
+  { name:"フェルマータ", color:"青"       },  // 17
+  { name:"間奏",         color:"緑"       },  // 18
+  { name:"アウトロ",     color:"オレンジ" },  // 19
+  { name:"エンディング", color:"オレンジ" },  // 20
+  { name:"よく聴いて",   color:"赤"       },  // 21
+  { name:"速すぎ",       color:"赤"       },  // 22
+  { name:"遅すぎ",       color:"赤"       },  // 23
+  { name:"ズレてる",     color:"赤"       },  // 24
+  { name:"いち",         color:"紫"       },  // 25
+  { name:"に",           color:"紫"       },  // 26
+  { name:"さん",         color:"紫"       },  // 27
+  { name:"し",           color:"紫"       },  // 28
+  { name:"とお",         color:"紫"       },  // 29
+  { name:"一拍目",       color:"赤"       },  // 30
+  { name:"いい感じ",     color:"黄緑"     },  // 31
+  { name:"あと3回",      color:"紫"       },  // 32
+  { name:"あと2回",      color:"紫"       },  // 33
+  { name:"あと1回",      color:"紫"       },  // 34
+  { name:"よくできました", color:"黄緑"   }   // 35
+];
+
+// 画面ごとの最初の並び。数字は上の一覧の番号です。0 は空きです。
+const DEFAULT_PADS = {
+  "3x3": [ 1, 2, 3,
+           4,18,11,
+          19,21,24],
+  "4x3": [ 1, 2, 3, 4,
+           5,18,11,19,
+          25,26,27,28],
+  "4x4": [ 1, 2, 3, 4,
+           5,18,11,19,
+          12,21,24,31,
+          25,26,27,28],
+  "5x4": [ 1, 2, 3, 4, 5,
+           6,18,11,19,20,
+          12,13,21,22,24,
+          25,26,27,28,31],
+  "6x5": [ 1, 2, 3, 4, 5, 6,
+           7, 8, 9,10,11,18,
+          19,20,12,13,14,15,
+          16,17,21,22,23,24,
+          25,26,27,28,31,35]
+};
+
+const VOICE_FILES = VOICE_LIST.map((_, i) =>
+  String(i + 1).padStart(2, "0") + VOICE_EXT);
+</script>
+<!-- ===================================================================== -->
+
+<div id="bar">
+  <div class="seg" id="layoutSeg">
+    <button data-l="3x3">3×3</button>
+    <button data-l="4x3">4×3</button>
+    <button data-l="4x4">4×4</button>
+    <button data-l="5x4">5×4</button>
+    <button data-l="6x5">6×5</button>
+  </div>
+  <button class="tool" id="editBtn">編集</button>
+  <div class="spacer"></div>
+  <div class="vol"><span>音量</span><input type="range" id="master" min="0" max="100" value="90"></div>
+  <button class="tool" id="stopAll">全部止める</button>
+  <button class="tool" id="helpBtn">使い方</button>
+</div>
+
+<div id="bar2">
+  <span class="cap">組み合わせ</span>
+  <select id="presetSel"></select>
+  <span id="dirty" hidden>未保存</span>
+  <button class="tool sm" id="presetSave">保存</button>
+  <button class="tool sm" id="presetDel">削除</button>
+  <div class="spacer"></div>
+  <button class="tool sm" id="presetOut">書き出し</button>
+  <button class="tool sm" id="presetIn">読み込み</button>
+</div>
+
+<div id="grid"></div>
+
+<div id="foot">
+  <span id="hint">パッドを押すと音が鳴ります。</span>
+  <span><b>VOICEVOX:ずんだもん</b></span>
+</div>
+
+<!-- 起動画面 -->
+<div class="screen" id="startScreen">
+  <div class="card">
+    <h1>ボイスパッド</h1>
+    <p>レッスン中の音声ガイドを、押すだけで鳴らせます。</p>
+    <p class="note">iPad では、画面を一度押すまで音を出せない決まりがあります。下のボタンを押して始めてください。</p>
+    <div id="loadState"></div>
+    <button class="big" id="startBtn">はじめる</button>
+  </div>
+</div>
+
+<!-- 使い方 -->
+<div class="screen" id="helpScreen" hidden>
+  <div class="card">
+    <h1>使い方</h1>
+    <h2>鳴らす</h2>
+    <p>パッドを押すと音が鳴ります。押している間に別のパッドを押せば、重ねて鳴らせます。全部止めたいときは「全部止める」を押してください。</p>
+    <h2>並びを変える</h2>
+    <p>「編集」を押すと編集中になります。パッドを別のパッドまで指でずらすと、入れ替わります。パッドを軽く押すと、表示名・色・音の割り当て・音量を変えられます。もう一度「編集」を押すと元に戻ります。</p>
+    <h2>パッドの数を変える</h2>
+    <p>左上の 3×3 / 4×3 / 4×4 / 5×4 / 6×5 で切り替わります。それぞれ別々に並びを覚えています。</p>
+    <h2>組み合わせを保存する</h2>
+    <p>並びを作ったら「保存」を押し、名前を付けます。あとから左の欄で選べば、その並びに戻ります。同じ名前で保存すると上書きします。</p>
+    <p>保存したあとにパッドを動かすと「未保存」と出ます。そのままにしておくと、次に選び直したときに動かすまえの並びに戻ります。残したいときは、もう一度「保存」を押してください。</p>
+    <p>組み合わせはパッドの数ごとに分かれています。4×3で作ったものは、4×3のときだけ出てきます。</p>
+    <h2>別の端末に持っていく</h2>
+    <p>組み合わせはその端末にだけ残ります。「書き出し」でファイルに出し、AirDropなどで送った先で「読み込み」を押すと、同じ組み合わせが使えます。同じ名前のものは上書きされます。</p>
+    <h2>音声を増やす</h2>
+    <p>音声ファイルは <code>voices</code> フォルダに、番号だけの名前で入れます。<code>01.wav</code> でも <code>001.wav</code> でも構いません。VOICEVOX の 設定 → オプション → 書き出しファイル名パターン を <code>$連番$</code> だけにしておくと、その名前で書き出されます。</p>
+    <ol>
+      <li>パソコンの VOICEVOX でずんだもんに喋らせ、音声を書き出します。</li>
+      <li>書き出したファイルの名前を、続きの番号（<code>36.wav</code> など）に変えて <code>voices</code> フォルダに入れます。</li>
+      <li>HTML の一覧の末尾に、その表示名と色を1行足します。</li>
+    </ol>
+    <p>iPad から直接足したいときは、編集中にパッドを押して「この端末から音声を追加」を選んでください。追加した音声はこの端末だけに残ります。</p>
+    <h2>反応を速くする</h2>
+    <p>音声ファイルの先頭には、書き出したときの無音が入っていることがあります。そのまま鳴らすと、押してから声が出るまで遅れて感じられます。このアプリは読み込むときに声の始まる位置を自動で探し、そこから鳴らします。音声を切り詰める作業は要りません。</p>
+    <p><label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+      <input type="checkbox" id="trimChk" style="width:20px;height:20px;">
+      <span style="font-size:14px;color:#c9c4ce;">音の頭の無音を自動で詰める</span>
+    </label></p>
+    <p class="note">頭が切れて聞こえる音声があれば、これを切って、そのファイルだけ手元で切り詰めてください。</p>
+    <h2>音が出ないとき</h2>
+    <p>iPad 本体の音量と、消音の設定を確かめてください。それでも鳴らないときは、画面を読み込み直して「はじめる」を押し直してください。</p>
+    <h2>ホーム画面に置く</h2>
+    <p>Safari の共有ボタンから「ホーム画面に追加」を選ぶと、アプリのように全画面で開けます。</p>
+    <p class="note">音声の読み上げには VOICEVOX:ずんだもん を使用しています。</p>
+    <button class="big" id="helpClose">閉じる</button>
+  </div>
+</div>
+
+<!-- パッド設定 -->
+<div class="screen" id="padScreen" hidden>
+  <div class="card">
+    <h1 id="padTitle">パッドの設定</h1>
+    <label class="f" for="padLabel">表示名</label>
+    <input type="text" id="padLabel" maxlength="12" placeholder="例：サビ">
+    <label class="f">色</label>
+    <div class="swatches" id="padColors"></div>
+    <label class="f" for="padSound">鳴らす音</label>
+    <select id="padSound"></select>
+    <label class="f" for="padVol">このパッドの音量</label>
+    <input type="range" id="padVol" min="0" max="100" value="100" style="width:100%">
+    <div class="row">
+      <button class="tool" id="padPreview">試しに鳴らす</button>
+      <button class="tool" id="padAdd">この端末から音声を追加</button>
+    </div>
+    <div class="row">
+      <button class="tool" id="padClear">空にする</button>
+      <button class="tool" id="padDone" style="background:var(--c0);border-color:var(--c0);color:#241a08;font-weight:700;">保存する</button>
+    </div>
+    <p class="note" id="padNote"></p>
+  </div>
+</div>
+
+<input type="file" id="filePicker" accept="audio/*" multiple hidden>
+<input type="file" id="presetFile" accept="application/json,.json" hidden>
+
+<!-- 名前を尋ねる／確認する -->
+<div class="screen" id="askScreen" hidden>
+  <div class="card">
+    <h1 id="askTitle">名前を付ける</h1>
+    <p id="askText"></p>
+    <input type="text" id="askInput" maxlength="24" placeholder="例：バンド練習">
+    <div class="row">
+      <button class="tool" id="askCancel">やめる</button>
+      <button class="tool" id="askOk" style="background:var(--c0);border-color:var(--c0);color:#241a08;font-weight:700;">決定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ------------------------------------------------------------------ */
+/* 定数                                                                */
+/* ------------------------------------------------------------------ */
+const LAYOUTS = {
+  "3x3": {cols:3, rows:3, n:9},
+  "4x3": {cols:4, rows:3, n:12},
+  "4x4": {cols:4, rows:4, n:16},
+  "5x4": {cols:5, rows:4, n:20},
+  "6x5": {cols:6, rows:5, n:30}
+};
+const COLORS = ["#f2a33c","#e4695e","#56c3a0","#5aa9e6","#ad8ce8","#c3d456"];
+const STORE_KEY = "voicepad.v3";
+
+/* ------------------------------------------------------------------ */
+/* 音まわり                                                            */
+/* ------------------------------------------------------------------ */
+let ctx = null, masterGain = null;
+const buffers = new Map();   // id -> AudioBuffer
+const trims = new Map();     // id -> {start, dur, cut}
+const library = [];          // {id, name, local:boolean}
+let voices = [];             // 再生中の source
+
+/* 前後の無音を測る。押してから鳴るまでの間を無くすため、
+   音が始まる位置を割り出し、そこから再生する。 */
+function measureTrim(buf){
+  const thr = 0.012;                     // これ以下は無音とみなす
+  const ch = buf.numberOfChannels, len = buf.length;
+  const data = [];
+  for (let c = 0; c < ch; c++) data.push(buf.getChannelData(c));
+  let s = -1, e = -1;
+  for (let i = 0; i < len && s < 0; i++)
+    for (let c = 0; c < ch; c++) if (Math.abs(data[c][i]) > thr){ s = i; break; }
+  for (let i = len - 1; i >= 0 && e < 0; i--)
+    for (let c = 0; c < ch; c++) if (Math.abs(data[c][i]) > thr){ e = i; break; }
+  if (s < 0 || e <= s) return {start:0, dur:buf.duration, cut:0};
+  const sr = buf.sampleRate;
+  const from = Math.max(0, s - Math.floor(sr * 0.005));    // 頭を5ミリ秒だけ残す
+  const to = Math.min(len - 1, e + Math.floor(sr * 0.06)); // 語尾に余韻を残す
+  return {start:from / sr, dur:(to - from) / sr, cut:from / sr};
+}
+
+function initAudio(){
+  if (ctx) return;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  ctx = new AC({latencyHint:"interactive"});
+  masterGain = ctx.createGain();
+  masterGain.gain.value = state.master;
+  masterGain.connect(ctx.destination);
+}
+
+function play(slot){
+  if (!ctx || !slot || !slot.id) return false;
+  const buf = buffers.get(slot.id);
+  if (!buf) return false;
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const g = ctx.createGain();
+  g.gain.value = slot.vol;
+  src.connect(g); g.connect(masterGain);
+  const t = state.trim ? trims.get(slot.id) : null;
+  if (t) src.start(0, t.start, t.dur); else src.start();
+  voices.push(src);
+  src.onended = () => { voices = voices.filter(v => v !== src); };
+  return true;
+}
+
+function stopAll(){
+  voices.forEach(v => { try { v.stop(); } catch(e){} });
+  voices = [];
+}
+
+/* ------------------------------------------------------------------ */
+/* 端末内に保存した音声（IndexedDB）                                    */
+/* ------------------------------------------------------------------ */
+function idb(){
+  return new Promise((res, rej) => {
+    const r = indexedDB.open("voicepad", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("files", {keyPath:"name"});
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+async function idbPut(name, blob){
+  const db = await idb();
+  return new Promise((res, rej) => {
+    const tx = db.transaction("files","readwrite");
+    tx.objectStore("files").put({name, blob});
+    tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+  });
+}
+async function idbAll(){
+  try {
+    /* 端末によっては応答が返らないことがあるため、待ちすぎないようにする */
+    const db = await Promise.race([
+      idb(),
+      new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 3000))
+    ]);
+    return await new Promise((res, rej) => {
+      const req = db.transaction("files","readonly").objectStore("files").getAll();
+      req.onsuccess = () => res(req.result || []);
+      req.onerror = () => rej(req.error);
+    });
+  } catch(e){ return []; }
+}
+
+/* ------------------------------------------------------------------ */
+/* 状態                                                                */
+/* ------------------------------------------------------------------ */
+function baseName(f){ return f.replace(/\.[^.]+$/, ""); }
+
+const COLOR_NAMES = ["オレンジ","赤","緑","青","紫","黄緑"];
+function colorIndex(v){
+  const i = COLOR_NAMES.indexOf(v);
+  return i < 0 ? 0 : i;
+}
+
+/* ファイル名（01.wav など）から表示名を引く */
+const NAMES = new Map(VOICE_FILES.map((f, i) => [f, VOICE_LIST[i].name]));
+function nameOf(id){
+  if (!id) return "";
+  if (NAMES.has(id)) return NAMES.get(id);
+  const lib = library.find(x => x.id === id);
+  return lib ? lib.name : baseName(id.replace(/^local:/, ""));
+}
+
+function emptySlot(){ return {id:null, label:"", color:0, vol:1}; }
+
+function slotFor(num){
+  const v = VOICE_LIST[num - 1];
+  if (!v) return emptySlot();
+  return {id:VOICE_FILES[num - 1], label:v.name, color:colorIndex(v.color), vol:1};
+}
+
+function defaultPreset(n, key){
+  const plan = (DEFAULT_PADS && DEFAULT_PADS[key]) || [];
+  const slots = [];
+  for (let i = 0; i < n; i++){
+    const num = plan[i] !== undefined ? plan[i] : i + 1;
+    slots.push(slotFor(num));
+  }
+  return slots;
+}
+
+let state = {
+  layout: "4x3",
+  master: 0.9,
+  trim: true,
+  saved: [],     // {name, layout, slots}
+  picked: {},    // レイアウトごとに、いま選んでいる組み合わせの名前
+  presets: buildDefaults()
+};
+
+function buildDefaults(){
+  const o = {};
+  for (const k of Object.keys(LAYOUTS)) o[k] = defaultPreset(LAYOUTS[k].n, k);
+  return o;
+}
+
+function save(){
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e){}
+}
+/* 保存データは古い形や壊れた形も来うるので、必ず整えてから使う */
+function tidySlots(arr, want){
+  let a = Array.isArray(arr) ? arr.slice(0, want) : [];
+  while (a.length < want) a.push(emptySlot());
+  return a.map(x => ({
+    id: x && x.id ? String(x.id) : null,
+    label: x && typeof x.label === "string" ? x.label : "",
+    color: x && Number.isInteger(x.color) && x.color >= 0 && x.color < COLORS.length ? x.color : 0,
+    vol: x && typeof x.vol === "number" && x.vol >= 0 && x.vol <= 1 ? x.vol : 1
+  }));
+}
+
+function tidySaved(list){
+  if (!Array.isArray(list)) return [];
+  const out = [];
+  for (const p of list){
+    if (!p || typeof p.name !== "string" || !p.name.trim()) continue;
+    if (!LAYOUTS[p.layout]) continue;
+    if (out.some(q => q.name === p.name.trim() && q.layout === p.layout)) continue;
+    out.push({name:p.name.trim(), layout:p.layout, slots:tidySlots(p.slots, LAYOUTS[p.layout].n)});
+  }
+  return out.slice(0, 60);
+}
+
+function load(){
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    if (!s || !s.presets) return;
+    const presets = {};
+    for (const k of Object.keys(LAYOUTS)){
+      presets[k] = Array.isArray(s.presets[k])
+        ? tidySlots(s.presets[k], LAYOUTS[k].n)
+        : defaultPreset(LAYOUTS[k].n, k);
+    }
+    const picked = {};
+    if (s.picked && typeof s.picked === "object")
+      for (const k of Object.keys(LAYOUTS))
+        if (typeof s.picked[k] === "string") picked[k] = s.picked[k];
+    state = {
+      layout: LAYOUTS[s.layout] ? s.layout : "4x3",
+      master: typeof s.master === "number" ? s.master : 0.9,
+      trim: s.trim !== false,
+      saved: tidySaved(s.saved),
+      picked,
+      presets
+    };
+  } catch(e){}
+}
+
+/* ------------------------------------------------------------------ */
+/* 読み込み                                                            */
+/* ------------------------------------------------------------------ */
+const loadState = document.getElementById("loadState");
+const missing = [];
+
+async function decodeInto(id, name, arrayBuf, local){
+  const buf = await new Promise((res, rej) => {
+    const p = ctx.decodeAudioData(arrayBuf, res, rej);
+    if (p && p.then) p.then(res, rej);
+  });
+  buffers.set(id, buf);
+  trims.set(id, measureTrim(buf));
+  if (!library.some(x => x.id === id)) library.push({id, name, local:!!local});
+}
+
+/* ファイル名の書き方は環境によって変わるため、いくつか試して探す。
+   01.wav / 001.wav / 1.wav、拡張子の大文字小文字、mp3 なども拾う。
+   1本目で見つかった書き方を覚え、残りはその形だけを探す。 */
+let filePattern = null;
+
+function candidates(num){
+  const digits = filePattern ? [filePattern.digits] : [2, 3, 1];
+  const exts = filePattern ? [filePattern.ext] : [".wav", ".WAV", ".mp3", ".MP3", ".m4a", ".ogg"];
+  const out = [];
+  for (const d of digits)
+    for (const e of exts)
+      out.push({name:String(num).padStart(d, "0") + e, digits:d, ext:e});
+  return out;
+}
+
+async function fetchVoice(num){
+  for (const c of candidates(num)){
+    try {
+      const r = await fetch(VOICE_DIR + c.name);
+      if (r.ok){
+        if (!filePattern) filePattern = {digits:c.digits, ext:c.ext};
+        return await r.arrayBuffer();
+      }
+    } catch(e){}
+  }
+  return null;
+}
+
+async function loadAll(){
+  let done = 0;
+  const total = VOICE_FILES.length;
+  for (let i = 0; i < total; i++){
+    const f = VOICE_FILES[i];
+    loadState.textContent = "音声を読み込んでいます… " + done + " / " + total;
+    try {
+      const buf = await fetchVoice(i + 1);
+      if (!buf) throw new Error("not found");
+      await decodeInto(f, VOICE_LIST[i].name, buf, false);
+    } catch(e){
+      missing.push(f);
+    }
+    done++;
+  }
+  const saved = await idbAll();
+  for (const rec of saved){
+    try { await decodeInto("local:" + rec.name, rec.name, await rec.blob.arrayBuffer(), true); }
+    catch(e){}
+  }
+  if (missing.length){
+    loadState.innerHTML = '<span class="err">' + missing.map(baseName).join("、") +
+      ' が見つかりません。voices フォルダの中身が、番号だけの名前（01.wav、001.wav など）に' +
+      'なっているか確かめてください。</span>';
+  } else {
+    loadState.textContent = "音声の読み込みが終わりました。";
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* 画面                                                                */
+/* ------------------------------------------------------------------ */
+const grid = document.getElementById("grid");
+let editing = false;
+
+function slots(){ return state.presets[state.layout]; }
+
+function render(){
+  const L = LAYOUTS[state.layout];
+  grid.classList.toggle("dense", L.cols >= 5);
+  grid.style.gridTemplateColumns = "repeat(" + L.cols + ",1fr)";
+  grid.style.gridTemplateRows = "repeat(" + L.rows + ",1fr)";
+  grid.innerHTML = "";
+  slots().forEach((s, i) => {
+    const el = document.createElement("div");
+    el.className = "pad" + (s.id && buffers.has(s.id) ? "" : " empty");
+    el.style.setProperty("--hue", COLORS[s.color] || COLORS[0]);
+    el.dataset.i = i;
+    const lab = document.createElement("div");
+    lab.className = "label";
+    lab.textContent = s.label || (s.id ? nameOf(s.id) : "空き");
+    el.appendChild(lab);
+    if (s.id && !buffers.has(s.id)){
+      const b = document.createElement("div");
+      b.className = "badge";
+      b.textContent = "音がありません";
+      el.appendChild(b);
+    }
+    grid.appendChild(el);
+  });
+  document.querySelectorAll("#layoutSeg button").forEach(b =>
+    b.classList.toggle("on", b.dataset.l === state.layout));
+  document.getElementById("editBtn").classList.toggle("on", editing);
+  document.body.classList.toggle("editing", editing);
+  document.getElementById("hint").textContent = editing
+    ? "パッドをずらすと入れ替わります。軽く押すと設定を変えられます。"
+    : "パッドを押すと音が鳴ります。";
+  if (typeof refreshPresets === "function") refreshPresets();
+}
+
+function flash(el){
+  el.classList.add("hit");
+  setTimeout(() => el.classList.remove("hit"), 130);
+}
+
+/* ------------------------------------------------------------------ */
+/* パッド操作（演奏・入れ替え）                                         */
+/* ------------------------------------------------------------------ */
+let drag = null;
+
+grid.addEventListener("pointerdown", e => {
+  const pad = e.target.closest(".pad");
+  if (!pad) return;
+  e.preventDefault();
+  const i = +pad.dataset.i;
+
+  if (!editing){
+    if (play(slots()[i])) flash(pad);
+    return;
+  }
+  drag = {from:i, el:pad, x:e.clientX, y:e.clientY, moved:false, over:null};
+  try { if (pad.setPointerCapture) pad.setPointerCapture(e.pointerId); } catch(err){}
+});
+
+grid.addEventListener("pointermove", e => {
+  if (!drag) return;
+  if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 12) return;
+  if (!drag.moved){ drag.moved = true; drag.el.classList.add("drag"); }
+  const under = document.elementFromPoint(e.clientX, e.clientY);
+  const pad = under && under.closest ? under.closest(".pad") : null;
+  if (drag.over && drag.over !== pad) drag.over.classList.remove("over");
+  if (pad && pad !== drag.el){ pad.classList.add("over"); drag.over = pad; }
+  else drag.over = null;
+});
+
+function endDrag(){
+  if (!drag) return;
+  const d = drag; drag = null;
+  d.el.classList.remove("drag");
+  if (d.over) d.over.classList.remove("over");
+  if (d.moved){
+    if (d.over){
+      const to = +d.over.dataset.i, arr = slots();
+      const t = arr[d.from]; arr[d.from] = arr[to]; arr[to] = t;
+      save(); render();
+    }
+  } else {
+    openPad(d.from);
+  }
+}
+grid.addEventListener("pointerup", endDrag);
+grid.addEventListener("pointercancel", endDrag);
+
+/* ------------------------------------------------------------------ */
+/* ヘッダー                                                            */
+/* ------------------------------------------------------------------ */
+document.getElementById("layoutSeg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  state.layout = b.dataset.l; save(); render();
+});
+document.getElementById("editBtn").addEventListener("click", () => {
+  editing = !editing; render();
+});
+document.getElementById("stopAll").addEventListener("click", stopAll);
+document.getElementById("master").addEventListener("input", e => {
+  state.master = e.target.value / 100;
+  if (masterGain) masterGain.gain.value = state.master;
+  save();
+});
+document.getElementById("helpBtn").addEventListener("click", () => {
+  document.getElementById("trimChk").checked = state.trim;
+  document.getElementById("helpScreen").hidden = false;
+});
+document.getElementById("trimChk").addEventListener("change", e => {
+  state.trim = e.target.checked; save();
+});
+document.getElementById("helpClose").addEventListener("click", () =>
+  document.getElementById("helpScreen").hidden = true);
+
+/* ------------------------------------------------------------------ */
+/* パッド設定画面                                                      */
+/* ------------------------------------------------------------------ */
+const padScreen = document.getElementById("padScreen");
+const padLabel = document.getElementById("padLabel");
+const padSound = document.getElementById("padSound");
+const padVol = document.getElementById("padVol");
+const padColors = document.getElementById("padColors");
+const padNote = document.getElementById("padNote");
+let editIndex = -1, editColor = 0;
+
+COLORS.forEach((c, i) => {
+  const b = document.createElement("button");
+  b.className = "sw"; b.style.background = c; b.dataset.c = i;
+  padColors.appendChild(b);
+});
+padColors.addEventListener("click", e => {
+  const b = e.target.closest(".sw"); if (!b) return;
+  editColor = +b.dataset.c;
+  [...padColors.children].forEach(x => x.classList.toggle("on", +x.dataset.c === editColor));
+});
+
+function fillSounds(selected){
+  padSound.innerHTML = "";
+  const none = document.createElement("option");
+  none.value = ""; none.textContent = "（なし）";
+  padSound.appendChild(none);
+  library.forEach(v => {
+    const o = document.createElement("option");
+    o.value = v.id;
+    o.textContent = v.name + (v.local ? "（この端末）" : "");
+    padSound.appendChild(o);
+  });
+  padSound.value = selected && buffers.has(selected) ? selected : "";
+}
+
+function trimNote(id){
+  if (!id || !buffers.has(id)) return library.length ? "" :
+    "使える音声がありません。voices フォルダを確かめるか、この端末から音声を追加してください。";
+  const t = trims.get(id);
+  if (!state.trim || !t || t.cut < 0.01) return "頭の無音はほとんどありません。";
+  return "頭の無音 " + t.cut.toFixed(2) + " 秒を詰めて鳴らします。";
+}
+
+function openPad(i){
+  editIndex = i;
+  const s = slots()[i];
+  document.getElementById("padTitle").textContent = (i + 1) + "番目のパッド";
+  padLabel.value = s.label || "";
+  editColor = s.color || 0;
+  [...padColors.children].forEach(x => x.classList.toggle("on", +x.dataset.c === editColor));
+  fillSounds(s.id);
+  padVol.value = Math.round((s.vol ?? 1) * 100);
+  padNote.textContent = trimNote(padSound.value);
+  padScreen.hidden = false;
+}
+
+padSound.addEventListener("change", () => {
+  if (!padLabel.value.trim()){
+    const v = library.find(x => x.id === padSound.value);
+    if (v) padLabel.value = v.name;
+  }
+  padNote.textContent = trimNote(padSound.value);
+});
+document.getElementById("padPreview").addEventListener("click", () =>
+  play({id:padSound.value, vol:padVol.value / 100}));
+document.getElementById("padClear").addEventListener("click", () => {
+  slots()[editIndex] = emptySlot();
+  padScreen.hidden = true; save(); render();
+});
+document.getElementById("padDone").addEventListener("click", () => {
+  const id = padSound.value || null;
+  slots()[editIndex] = {
+    id,
+    label: padLabel.value.trim() || (id ? (library.find(x => x.id === id) || {}).name || "" : ""),
+    color: editColor,
+    vol: padVol.value / 100
+  };
+  padScreen.hidden = true; save(); render();
+});
+
+/* 端末から音声を追加 */
+const picker = document.getElementById("filePicker");
+document.getElementById("padAdd").addEventListener("click", () => picker.click());
+picker.addEventListener("change", async () => {
+  const files = [...picker.files];
+  picker.value = "";
+  let last = null;
+  for (const f of files){
+    try {
+      const buf = await f.arrayBuffer();
+      const id = "local:" + f.name;
+      await decodeInto(id, baseName(f.name), buf.slice(0), true);
+      await idbPut(f.name, f);
+      last = id;
+    } catch(e){
+      padNote.textContent = f.name + " は読み込めませんでした。";
+    }
+  }
+  if (last){
+    fillSounds(last);
+    if (!padLabel.value.trim()){
+      const v = library.find(x => x.id === last);
+      if (v) padLabel.value = v.name;
+    }
+    padNote.textContent = files.length + " 件を追加しました。";
+  }
+});
+
+/* ------------------------------------------------------------------ */
+/* 組み合わせ（プリセット）                                            */
+/* ------------------------------------------------------------------ */
+const presetSel = document.getElementById("presetSel");
+const dirtyMark = document.getElementById("dirty");
+
+function savedFor(layout){ return state.saved.filter(p => p.layout === layout); }
+function findPreset(name, layout){
+  return state.saved.find(p => p.name === name && p.layout === layout) || null;
+}
+function pickedName(){ return state.picked[state.layout] || ""; }
+
+function isDirty(){
+  const p = findPreset(pickedName(), state.layout);
+  if (!p) return state.saved.length > 0 || pickedName() !== "";
+  return JSON.stringify(p.slots) !== JSON.stringify(slots());
+}
+
+function refreshPresets(){
+  const list = savedFor(state.layout);
+  presetSel.innerHTML = "";
+  const none = document.createElement("option");
+  none.value = "";
+  none.textContent = list.length ? "（選んでいません）" : "（まだありません）";
+  presetSel.appendChild(none);
+  list.forEach(p => {
+    const o = document.createElement("option");
+    o.value = p.name; o.textContent = p.name;
+    presetSel.appendChild(o);
+  });
+  presetSel.value = findPreset(pickedName(), state.layout) ? pickedName() : "";
+  document.getElementById("presetDel").disabled = !presetSel.value;
+  dirtyMark.hidden = !(presetSel.value && isDirty());
+}
+
+presetSel.addEventListener("change", () => {
+  const p = findPreset(presetSel.value, state.layout);
+  if (!p){ state.picked[state.layout] = ""; save(); refreshPresets(); return; }
+  state.presets[state.layout] = JSON.parse(JSON.stringify(p.slots));
+  state.picked[state.layout] = p.name;
+  save(); render();
+});
+
+document.getElementById("presetSave").addEventListener("click", async () => {
+  const name = await ask("組み合わせを保存", "名前を付けてください。同じ名前にすると上書きします。", pickedName());
+  if (!name) return;
+  const copy = JSON.parse(JSON.stringify(slots()));
+  const exist = findPreset(name, state.layout);
+  if (exist) exist.slots = copy;
+  else state.saved.push({name, layout:state.layout, slots:copy});
+  state.picked[state.layout] = name;
+  save(); refreshPresets();
+});
+
+document.getElementById("presetDel").addEventListener("click", async () => {
+  const name = presetSel.value;
+  if (!name) return;
+  const yes = await ask("組み合わせを削除", "「" + name + "」を削除します。よろしいですか。", null);
+  if (!yes) return;
+  state.saved = state.saved.filter(p => !(p.name === name && p.layout === state.layout));
+  state.picked[state.layout] = "";
+  save(); refreshPresets();
+});
+
+document.getElementById("presetOut").addEventListener("click", () => {
+  const data = {kind:"voicepad-presets", version:1, saved:state.saved};
+  const blob = new Blob([JSON.stringify(data, null, 1)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "voicepad-presets.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+});
+
+const presetFile = document.getElementById("presetFile");
+document.getElementById("presetIn").addEventListener("click", () => presetFile.click());
+presetFile.addEventListener("change", async () => {
+  const f = presetFile.files[0];
+  presetFile.value = "";
+  if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    const incoming = tidySaved(data && data.saved);
+    if (!incoming.length){ await ask("読み込み", "組み合わせが入っていないファイルです。", null); return; }
+    let added = 0, over = 0;
+    for (const p of incoming){
+      const exist = findPreset(p.name, p.layout);
+      if (exist){ exist.slots = p.slots; over++; }
+      else { state.saved.push(p); added++; }
+    }
+    save(); refreshPresets();
+    await ask("読み込み", added + " 件を追加し、" + over + " 件を上書きしました。", null);
+  } catch(e){
+    await ask("読み込み", "このファイルは読み込めませんでした。", null);
+  }
+});
+
+/* 名前を尋ねる／確認する。text だけのときは確認、既定値を渡すと入力欄が出る */
+const askScreen = document.getElementById("askScreen");
+const askInput = document.getElementById("askInput");
+let askResolve = null;
+
+function ask(title, text, initial){
+  document.getElementById("askTitle").textContent = title;
+  document.getElementById("askText").textContent = text;
+  const wantsText = typeof initial === "string";
+  askInput.hidden = !wantsText;
+  askInput.value = wantsText ? initial : "";
+  askScreen.hidden = false;
+  if (wantsText) setTimeout(() => askInput.focus(), 40);
+  return new Promise(res => { askResolve = (v) => { askResolve = null; res(v); }; });
+}
+function closeAsk(value){
+  askScreen.hidden = true;
+  if (askResolve) askResolve(value);
+}
+document.getElementById("askOk").addEventListener("click", () =>
+  closeAsk(askInput.hidden ? true : askInput.value.trim()));
+document.getElementById("askCancel").addEventListener("click", () => closeAsk(null));
+askInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") closeAsk(askInput.value.trim());
+});
+
+/* ------------------------------------------------------------------ */
+/* 起動                                                                */
+/* ------------------------------------------------------------------ */
+load();
+document.getElementById("master").value = Math.round(state.master * 100);
+render();
+
+const startBtn = document.getElementById("startBtn");
+startBtn.addEventListener("click", async () => {
+  startBtn.disabled = true;
+  startBtn.textContent = "読み込み中…";
+  try {
+    if (navigator.audioSession) navigator.audioSession.type = "playback";
+  } catch(e){}
+  initAudio();
+  try { await ctx.resume(); } catch(e){}
+  await loadAll();
+  render();
+  startBtn.disabled = false;
+  startBtn.textContent = "パッドを開く";
+  startBtn.onclick = () => { document.getElementById("startScreen").hidden = true; };
+});
+
+document.addEventListener("gesturestart", e => e.preventDefault());
+document.addEventListener("dblclick", e => e.preventDefault());
+window.addEventListener("resize", () => {});
+</script>
+</body>
+</html>
