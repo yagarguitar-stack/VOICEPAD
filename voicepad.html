@@ -257,7 +257,7 @@ const VOICE_FILES = VOICE_LIST.map((_, i) =>
     <h2>パッドの数を変える</h2>
     <p>左上の 3×3 / 4×3 / 4×4 で切り替わります。それぞれ別々に並びを覚えています。</p>
     <h2>音声を増やす</h2>
-    <p>音声ファイルは <code>voices</code> フォルダに <code>01.wav</code> から順の通し番号で入れます。表示名は、この HTML ファイルの上のほうにある一覧が番号順に対応しています。</p>
+    <p>音声ファイルは <code>voices</code> フォルダに、番号だけの名前で入れます。<code>01.wav</code> でも <code>001.wav</code> でも構いません。VOICEVOX の 設定 → オプション → 書き出しファイル名パターン を <code>$連番$</code> だけにしておくと、その名前で書き出されます。</p>
     <ol>
       <li>パソコンの VOICEVOX でずんだもんに喋らせ、音声を書き出します。</li>
       <li>書き出したファイルの名前を、続きの番号（<code>28.wav</code> など）に変えて <code>voices</code> フォルダに入れます。</li>
@@ -399,7 +399,11 @@ async function idbPut(name, blob){
 }
 async function idbAll(){
   try {
-    const db = await idb();
+    /* 端末によっては応答が返らないことがあるため、待ちすぎないようにする */
+    const db = await Promise.race([
+      idb(),
+      new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 3000))
+    ]);
     return await new Promise((res, rej) => {
       const req = db.transaction("files","readonly").objectStore("files").getAll();
       req.onsuccess = () => res(req.result || []);
@@ -503,16 +507,29 @@ async function decodeInto(id, name, arrayBuf, local){
   if (!library.some(x => x.id === id)) library.push({id, name, local:!!local});
 }
 
-async function fetchVoice(f){
-  const tries = [f];
-  for (const ext of [".wav", ".mp3", ".m4a", ".ogg"]){
-    const alt = baseName(f) + ext;
-    if (!tries.includes(alt)) tries.push(alt);
-  }
-  for (const name of tries){
+/* ファイル名の書き方は環境によって変わるため、いくつか試して探す。
+   01.wav / 001.wav / 1.wav、拡張子の大文字小文字、mp3 なども拾う。
+   1本目で見つかった書き方を覚え、残りはその形だけを探す。 */
+let filePattern = null;
+
+function candidates(num){
+  const digits = filePattern ? [filePattern.digits] : [2, 3, 1];
+  const exts = filePattern ? [filePattern.ext] : [".wav", ".WAV", ".mp3", ".MP3", ".m4a", ".ogg"];
+  const out = [];
+  for (const d of digits)
+    for (const e of exts)
+      out.push({name:String(num).padStart(d, "0") + e, digits:d, ext:e});
+  return out;
+}
+
+async function fetchVoice(num){
+  for (const c of candidates(num)){
     try {
-      const r = await fetch(VOICE_DIR + name);
-      if (r.ok) return await r.arrayBuffer();
+      const r = await fetch(VOICE_DIR + c.name);
+      if (r.ok){
+        if (!filePattern) filePattern = {digits:c.digits, ext:c.ext};
+        return await r.arrayBuffer();
+      }
     } catch(e){}
   }
   return null;
@@ -525,7 +542,7 @@ async function loadAll(){
     const f = VOICE_FILES[i];
     loadState.textContent = "音声を読み込んでいます… " + done + " / " + total;
     try {
-      const buf = await fetchVoice(f);
+      const buf = await fetchVoice(i + 1);
       if (!buf) throw new Error("not found");
       await decodeInto(f, VOICE_LIST[i].name, buf, false);
     } catch(e){
@@ -540,7 +557,8 @@ async function loadAll(){
   }
   if (missing.length){
     loadState.innerHTML = '<span class="err">' + missing.map(baseName).join("、") +
-      ' が見つかりません。voices フォルダにファイルがあるか確かめてください。</span>';
+      ' が見つかりません。voices フォルダの中身が、番号だけの名前（01.wav、001.wav など）に' +
+      'なっているか確かめてください。</span>';
   } else {
     loadState.textContent = "音声の読み込みが終わりました。";
   }
