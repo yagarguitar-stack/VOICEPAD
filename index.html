@@ -5,188 +5,350 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>ボイスパッド</title>
+<meta name="theme-color" content="#0f0f12">
+<title>VOICE PAD</title>
 <style>
 :root{
-  --chassis:#141318;
-  --panel:#1e1d23;
-  --panel-hi:#2a2932;
-  --line:#35333d;
-  --ink:#eae6df;
-  --dim:#8c8794;
-  --c0:#f2a33c;
-  --c1:#e4695e;
-  --c2:#56c3a0;
-  --c3:#5aa9e6;
-  --c4:#ad8ce8;
-  --c5:#c3d456;
+  --chassis:#0e0e11;
+  --panel:#16161a;
+  --panel2:#1d1d23;
+  --raise:#26262e;
+  --edge:rgba(255,255,255,.07);
+  --edge2:rgba(255,255,255,.12);
+  --deep:#08080a;
+  --ink:#eceae5;
+  --dim:#8a8593;
+  --dim2:#5e5a67;
+  --focus:#7fb4ff;
+  --c0:#f0a13c;
+  --c1:#e46a5e;
+  --c2:#4fc3a1;
+  --c3:#5aa5e6;
+  --c4:#a98ce6;
+  --c5:#bcd257;
+  --r:13px;
+  --t:.16s cubic-bezier(.3,.7,.3,1);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;margin:0;}
 body{
-  background:var(--chassis);
+  background:
+    radial-gradient(120% 80% at 50% -10%, #1a1a20 0%, transparent 60%),
+    var(--chassis);
   color:var(--ink);
-  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
+  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",
+              -apple-system,"Helvetica Neue",system-ui,sans-serif;
+  font-feature-settings:"tnum" 1;
   overflow:hidden;
   user-select:none;-webkit-user-select:none;
-  padding-top:env(safe-area-inset-top);
-  padding-bottom:env(safe-area-inset-bottom);
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   display:flex;flex-direction:column;
 }
 button{font-family:inherit;color:inherit;border:none;background:none;cursor:pointer;}
+:focus{outline:none;}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:8px;}
 
-/* ---------- header ---------- */
-#bar{
-  flex:0 0 auto;display:flex;align-items:center;gap:10px;
-  padding:9px 12px;background:var(--panel);
-  border-bottom:1px solid var(--line);
-  box-shadow:0 1px 0 rgba(255,255,255,.04) inset;
+.micro{
+  font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--dim2);font-weight:600;white-space:nowrap;
 }
-.seg{display:flex;background:var(--chassis);border:1px solid var(--line);border-radius:9px;overflow:hidden;}
-.seg button{padding:7px 13px;font-size:14px;color:var(--dim);letter-spacing:.02em;}
-.seg button.on{background:var(--panel-hi);color:var(--ink);}
-.tool{
-  padding:8px 13px;font-size:14px;border:1px solid var(--line);
-  border-radius:9px;background:var(--chassis);color:var(--dim);
+.grow{flex:1 1 auto;}
+
+/* ============ header ============ */
+#top{
+  flex:0 0 auto;display:flex;align-items:center;gap:14px;
+  padding:10px 14px;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border-bottom:1px solid var(--deep);
+  box-shadow:0 1px 0 rgba(255,255,255,.05) inset, 0 2px 10px rgba(0,0,0,.4);
 }
-.tool.on{background:var(--c0);border-color:var(--c0);color:#241a08;font-weight:600;}
-#stopAll{color:var(--c1);border-color:#4a2b2c;}
-#stopAll:active{background:var(--c1);color:#2a100e;}
-.spacer{flex:1 1 auto;}
-.vol{display:flex;align-items:center;gap:8px;}
-.vol span{font-size:12px;color:var(--dim);}
+.brand{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.brand .mark{
+  font-size:15px;font-weight:700;letter-spacing:.2em;line-height:1;
+  white-space:nowrap;
+}
+.brand .sub{font-size:9px;letter-spacing:.14em;color:var(--dim2);line-height:1;white-space:nowrap;}
+
+.seg{
+  display:flex;background:var(--deep);border:1px solid var(--edge);
+  border-radius:11px;padding:3px;gap:2px;
+}
+.seg button{
+  padding:7px 13px;font-size:13px;font-weight:600;color:var(--dim);
+  border-radius:8px;letter-spacing:.03em;transition:background var(--t),color var(--t);
+}
+.seg button:hover{color:var(--ink);}
+.seg button.on{background:var(--raise);color:var(--ink);box-shadow:0 1px 0 rgba(255,255,255,.07) inset;}
+
+.ctrl{display:flex;align-items:center;gap:8px;}
+.btn{
+  padding:9px 14px;font-size:13px;font-weight:600;letter-spacing:.06em;
+  border:1px solid var(--edge);border-radius:10px;
+  background:linear-gradient(180deg,var(--raise),#1a1a20);
+  color:var(--dim);
+  box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 1px 2px rgba(0,0,0,.4);
+  transition:color var(--t),border-color var(--t),background var(--t),transform .08s;
+  white-space:nowrap;
+}
+.btn:hover{color:var(--ink);border-color:var(--edge2);}
+.btn:active{transform:translateY(1px);}
+.btn.sm{padding:7px 11px;font-size:12px;}
+.btn.on{
+  background:linear-gradient(180deg,#f7ae4c,var(--c0));
+  color:#231705;border-color:#f7ae4c;
+  box-shadow:0 0 16px rgba(240,161,60,.35);
+}
+.btn.quiet{color:var(--dim2);}
+.btn.danger:hover{color:var(--c1);border-color:rgba(228,106,94,.5);}
+.btn:disabled{opacity:.35;cursor:default;}
+.btn:disabled:hover{color:var(--dim);border-color:var(--edge);}
+.btn.primary{
+  background:linear-gradient(180deg,#f7ae4c,var(--c0));
+  color:#231705;border-color:#f7ae4c;
+}
+
+.vol{display:flex;align-items:center;gap:8px;padding:0 4px;}
+.vol .num{font-size:12px;color:var(--dim);min-width:38px;text-align:right;}
 input[type=range]{
-  -webkit-appearance:none;appearance:none;width:110px;height:22px;background:transparent;
+  -webkit-appearance:none;appearance:none;width:104px;height:22px;background:transparent;
 }
-input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--line);border-radius:2px;}
+input[type=range]::-webkit-slider-runnable-track{
+  height:4px;background:var(--deep);border-radius:2px;
+  box-shadow:0 1px 0 rgba(255,255,255,.05);
+}
 input[type=range]::-webkit-slider-thumb{
-  -webkit-appearance:none;width:20px;height:20px;margin-top:-8px;border-radius:50%;
-  background:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.6);
+  -webkit-appearance:none;width:18px;height:18px;margin-top:-7px;border-radius:50%;
+  background:linear-gradient(180deg,#f2efe9,#b9b4bf);
+  box-shadow:0 1px 3px rgba(0,0,0,.7);
 }
-input[type=range]::-moz-range-track{height:4px;background:var(--line);border-radius:2px;}
-input[type=range]::-moz-range-thumb{width:20px;height:20px;border:none;border-radius:50%;background:var(--ink);}
+input[type=range]::-moz-range-track{height:4px;background:var(--deep);border-radius:2px;}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border:none;border-radius:50%;background:#e8e4de;}
 
-#bar2{
-  flex:0 0 auto;display:flex;align-items:center;gap:8px;
-  padding:7px 12px;background:var(--chassis);
-  border-bottom:1px solid var(--line);
+/* ============ preset bar ============ */
+#presetBar{
+  flex:0 0 auto;display:flex;align-items:center;gap:9px;
+  padding:8px 14px;background:var(--chassis);
+  border-bottom:1px solid var(--deep);
+  box-shadow:0 1px 0 rgba(255,255,255,.03) inset;
 }
-#bar2 .cap{font-size:12px;color:var(--dim);}
-#bar2 select{
-  width:auto;min-width:160px;max-width:44vw;padding:7px 10px;font-size:14px;
-  border-radius:9px;background:var(--panel);border:1px solid var(--line);color:var(--ink);
+#presetBar[hidden]{display:none;}
+#presetSel{
+  min-width:170px;max-width:40vw;padding:8px 11px;font-size:13px;
+  border-radius:10px;background:var(--panel2);border:1px solid var(--edge);
+  color:var(--ink);
 }
-.tool.sm{padding:7px 11px;font-size:13px;}
-#dirty{
-  font-size:11px;color:#241a08;background:var(--c0);
-  padding:3px 8px;border-radius:20px;font-weight:600;
+.chip{
+  font-size:10px;letter-spacing:.1em;font-weight:700;text-transform:uppercase;
+  padding:4px 9px;border-radius:20px;border:1px solid var(--edge);
+  color:var(--dim2);white-space:nowrap;transition:all var(--t);
 }
-#dirty[hidden]{display:none;}
+.chip.saved{color:var(--dim);}
+.chip.mod{color:#f0a13c;border-color:rgba(240,161,60,.45);background:rgba(240,161,60,.1);}
+.chip.done{color:#bcd257;border-color:rgba(188,210,87,.45);background:rgba(188,210,87,.12);}
+.chip.err{color:var(--c1);border-color:rgba(228,106,94,.45);background:rgba(228,106,94,.1);}
 
-/* ---------- pads ---------- */
+/* ============ edit banner ============ */
+#editBanner{
+  flex:0 0 auto;display:flex;align-items:center;gap:12px;
+  padding:7px 14px;font-size:12px;color:#231705;
+  background:linear-gradient(180deg,#f7ae4c,var(--c0));
+  letter-spacing:.02em;
+}
+#editBanner[hidden]{display:none;}
+#editBanner b{font-size:10px;letter-spacing:.16em;font-weight:800;}
+
+/* ============ pads ============ */
 #grid{
-  flex:1 1 auto;display:grid;gap:10px;padding:12px;min-height:0;
+  flex:1 1 auto;display:grid;gap:11px;padding:13px;min-height:0;
 }
-#grid.dense{gap:6px;padding:8px;}
+#grid.dense{gap:7px;padding:9px;}
+
 .pad{
-  position:relative;border-radius:14px;
-  background:linear-gradient(180deg,var(--panel-hi),#191820);
-  border:1px solid var(--line);
-  box-shadow:0 3px 0 #0d0c11, 0 6px 14px rgba(0,0,0,.45), 0 1px 0 rgba(255,255,255,.05) inset;
-  display:flex;align-items:center;justify-content:center;
-  padding:8px;text-align:center;
-  transition:transform .05s ease, box-shadow .05s ease, background .12s ease;
-  overflow:hidden;touch-action:none;
+  position:relative;border-radius:var(--r);overflow:hidden;
+  display:grid;grid-template-rows:auto 1fr auto;
+  padding:8px 9px;text-align:center;
+  background:linear-gradient(180deg,var(--raise),#16161b);
+  border:1px solid var(--edge);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.07) inset,
+    0 4px 0 var(--deep),
+    0 7px 16px rgba(0,0,0,.45);
+  transition:transform .09s ease, box-shadow .09s ease, border-color var(--t);
+  touch-action:none;color:var(--ink);
 }
-.pad::after{
-  content:"";position:absolute;inset:0;border-radius:13px;
-  border:2px solid var(--hue);opacity:.5;pointer-events:none;
+.pad .bar{
+  position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;
+  background:var(--hue);opacity:.75;transition:opacity var(--t),box-shadow var(--t);
 }
-.pad .label{
-  font-size:clamp(13px,2.4vw,21px);font-weight:600;line-height:1.25;
-  word-break:break-word;color:var(--ink);
+.pad .tint{
+  position:absolute;inset:0;background:var(--hue);opacity:0;
+  transition:opacity .09s ease;pointer-events:none;
 }
-#grid.dense .pad{border-radius:10px;padding:4px;}
-#grid.dense .pad .label{font-size:clamp(11px,1.5vw,16px);}
-#grid.dense .badge{font-size:9px;top:3px;right:5px;}
-.pad.empty{background:#17161c;box-shadow:none;border-style:dashed;}
-.pad.empty::after{opacity:.12;}
-.pad.empty .label{color:#55515c;font-weight:400;}
+.pad .pnum{
+  position:relative;font-size:10px;letter-spacing:.1em;color:var(--dim2);
+  text-align:left;padding-left:5px;font-weight:600;
+}
+.pad .plabel{
+  position:relative;display:flex;align-items:center;justify-content:center;
+  font-size:clamp(13px,2.3vw,21px);font-weight:600;line-height:1.2;
+  word-break:break-word;padding:0 2px;
+}
+.pad .pstate{
+  position:relative;font-size:9px;letter-spacing:.14em;font-weight:700;
+  color:transparent;text-transform:uppercase;min-height:12px;
+  transition:color var(--t);
+}
+.pad.playing .pstate{color:var(--hue);}
+.pad.playing{border-color:color-mix(in srgb, var(--hue) 55%, transparent);}
+.pad.playing .bar{opacity:1;box-shadow:0 0 14px var(--hue);}
 .pad.hit{
-  background:var(--hue);
-  transform:translateY(3px);
-  box-shadow:0 0 0 #0d0c11, 0 0 26px var(--hue), 0 2px 6px rgba(0,0,0,.5) inset;
+  transform:translateY(4px);
+  box-shadow:0 0 0 var(--deep),0 2px 8px rgba(0,0,0,.5) inset;
 }
-.pad.hit .label{color:#16140f;}
-.pad.hit::after{opacity:1;}
-body.editing .pad{border-style:dashed;}
-body.editing .pad .label::after{content:"";}
-.pad.drag{opacity:.35;}
-.pad.over{outline:3px solid var(--ink);outline-offset:-3px;}
-.badge{
-  position:absolute;top:6px;right:8px;font-size:11px;color:var(--dim);
-}
+.pad.hit .tint{opacity:.5;}
 
-/* ---------- footer ---------- */
-#foot{
-  flex:0 0 auto;padding:5px 14px 9px;font-size:11px;color:#5f5a68;
-  display:flex;justify-content:space-between;gap:10px;
+.pad.empty{
+  background:#131317;border-style:dashed;border-color:rgba(255,255,255,.1);
+  box-shadow:none;
 }
-#foot b{font-weight:500;color:#7a7484;}
+.pad.empty .bar{opacity:.14;}
+.pad.empty .plabel{color:var(--dim2);font-weight:400;}
+.pad.empty .pstate{color:var(--dim2);}
+.pad.missing .pstate{color:var(--c1);}
 
-/* ---------- overlays ---------- */
+body.editing .pad{border-style:dashed;border-color:rgba(240,161,60,.4);cursor:grab;}
+body.editing .pad .pnum{color:var(--c0);}
+.pad.drag{opacity:.3;}
+.pad.over{border-color:var(--ink);border-style:solid;box-shadow:0 0 0 2px var(--ink) inset;}
+
+#grid.dense .pad{border-radius:10px;padding:5px 6px;}
+#grid.dense .pad .plabel{font-size:clamp(11px,1.5vw,16px);}
+#grid.dense .pad .pnum{font-size:9px;}
+#grid.dense .pad .pstate{font-size:8px;min-height:10px;}
+
+/* ============ status bar ============ */
+#status{
+  flex:0 0 auto;display:flex;align-items:center;gap:12px;
+  padding:7px 14px;background:var(--panel);
+  border-top:1px solid var(--deep);
+  box-shadow:0 -1px 0 rgba(255,255,255,.04) inset;
+  font-size:11px;color:var(--dim2);
+}
+#stInfo{letter-spacing:.06em;}
+.credit{letter-spacing:.06em;color:var(--dim2);}
+
+/* ============ overlays ============ */
 .screen{
-  position:fixed;inset:0;z-index:50;background:rgba(10,9,13,.88);
-  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  position:fixed;inset:0;z-index:50;
+  background:rgba(8,8,11,.72);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   display:flex;align-items:center;justify-content:center;padding:20px;
+  animation:fade .18s ease;
 }
 .screen[hidden]{display:none;}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes rise{from{opacity:0;transform:translateY(10px) scale(.99)}to{opacity:1;transform:none}}
 .card{
-  width:min(560px,100%);max-height:86vh;overflow:auto;
-  background:var(--panel);border:1px solid var(--line);border-radius:18px;
-  padding:22px 22px 18px;box-shadow:0 18px 50px rgba(0,0,0,.6);
+  width:min(520px,100%);max-height:86vh;overflow:auto;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border:1px solid var(--edge);border-radius:18px;
+  padding:24px 24px 20px;
+  box-shadow:0 24px 60px rgba(0,0,0,.65),0 1px 0 rgba(255,255,255,.06) inset;
+  animation:rise .2s cubic-bezier(.3,.8,.3,1);
 }
-.card h1{font-size:26px;margin:0 0 6px;letter-spacing:.03em;}
-.card h2{font-size:17px;margin:18px 0 6px;color:var(--c0);}
-.card p,.card li{font-size:14px;line-height:1.75;color:#c9c4ce;margin:6px 0;}
-.card code{background:var(--chassis);padding:2px 6px;border-radius:5px;font-size:13px;color:var(--c2);}
+.card.wide{width:min(640px,100%);}
+.card h1{font-size:15px;letter-spacing:.18em;margin:0 0 4px;font-weight:700;}
+.card .lead{font-size:12px;color:var(--dim2);letter-spacing:.1em;margin:0 0 18px;text-transform:uppercase;}
+.card h2{font-size:15px;margin:20px 0 6px;color:var(--ink);font-weight:700;}
+.card p,.card li{font-size:13.5px;line-height:1.8;color:#c5c0cb;margin:6px 0;}
+.card code{background:var(--deep);padding:2px 6px;border-radius:5px;font-size:12.5px;color:var(--c2);}
 .card ol,.card ul{padding-left:1.25em;margin:6px 0;}
-.big{
-  display:block;width:100%;margin-top:18px;padding:16px;border-radius:12px;
-  background:var(--c0);color:#241a08;font-size:17px;font-weight:700;
-}
-.big:disabled{background:var(--line);color:var(--dim);}
-.row{display:flex;gap:10px;margin-top:14px;}
-.row .tool{flex:1;text-align:center;padding:12px;}
-label.f{display:block;font-size:12px;color:var(--dim);margin:14px 0 5px;}
+.sect{border-top:1px solid var(--edge);margin-top:18px;padding-top:14px;}
+.sect:first-of-type{border-top:none;margin-top:6px;padding-top:0;}
+label.f{display:block;margin:0 0 7px;}
 input[type=text],select{
-  width:100%;padding:11px 12px;font-size:16px;border-radius:10px;
-  background:var(--chassis);border:1px solid var(--line);color:var(--ink);
+  width:100%;padding:12px 13px;font-size:16px;border-radius:11px;
+  background:var(--deep);border:1px solid var(--edge);color:var(--ink);
 }
+input[type=text]:focus,select:focus{border-color:var(--focus);}
 .swatches{display:flex;gap:9px;flex-wrap:wrap;}
-.sw{width:38px;height:38px;border-radius:10px;border:2px solid transparent;}
+.sw{
+  width:40px;height:40px;border-radius:11px;border:2px solid transparent;
+  transition:transform .12s,border-color var(--t);position:relative;
+}
+.sw:hover{transform:translateY(-2px);}
 .sw.on{border-color:var(--ink);}
-.note{font-size:12px;color:#7a7484;margin-top:14px;line-height:1.7;}
-#loadState{font-size:13px;color:var(--dim);margin-top:14px;min-height:1.2em;}
+.rowflex{display:flex;align-items:center;gap:12px;}
+.rowflex input[type=range]{flex:1 1 auto;width:auto;}
+.rowflex .num{font-size:12px;color:var(--dim);min-width:44px;text-align:right;}
+.acts{display:flex;gap:10px;margin-top:20px;}
+.acts .btn{flex:1;text-align:center;justify-content:center;padding:13px;font-size:14px;}
+.acts.split{margin-top:12px;}
+.note{font-size:12px;color:var(--dim2);margin-top:14px;line-height:1.7;}
+.big{
+  display:block;width:100%;margin-top:20px;padding:17px;border-radius:12px;
+  background:linear-gradient(180deg,#f7ae4c,var(--c0));color:#231705;
+  font-size:15px;font-weight:800;letter-spacing:.14em;
+  transition:filter var(--t),transform .08s;
+}
+.big:hover{filter:brightness(1.06);}
+.big:active{transform:translateY(1px);}
+.big:disabled{background:var(--raise);color:var(--dim2);filter:none;}
+
+/* start screen */
+#startScreen .card{text-align:center;}
+.hero{font-size:34px;font-weight:800;letter-spacing:.22em;margin:6px 0 6px;}
+.heroSub{font-size:11px;letter-spacing:.24em;color:var(--dim2);margin-bottom:24px;}
+.specs{display:flex;justify-content:center;gap:0;margin:0 0 20px;}
+.spec{flex:1;padding:12px 4px;border-left:1px solid var(--edge);}
+.spec:first-child{border-left:none;}
+.spec .n{font-size:22px;font-weight:700;line-height:1;}
+.spec .k{font-size:9px;letter-spacing:.16em;color:var(--dim2);margin-top:6px;}
+#bar{height:4px;background:var(--deep);border-radius:3px;overflow:hidden;margin-top:4px;}
+#barFill{height:100%;width:0;background:linear-gradient(90deg,var(--c0),#f7ae4c);transition:width .2s;}
+#loadState{font-size:12px;color:var(--dim);margin-top:12px;min-height:1.3em;letter-spacing:.04em;}
 .err{color:var(--c1);}
+
+/* ============ responsive ============ */
+@media (max-width:1000px){
+  .brand .sub{display:none;}
+  input[type=range]{width:84px;}
+}
+@media (max-width:860px){
+  #top{flex-wrap:wrap;gap:9px;padding:9px 11px;}
+  .seg button{padding:7px 10px;font-size:12px;}
+  .btn{padding:8px 11px;font-size:12px;}
+  .ctrl{gap:6px;}
+}
+@media (max-width:620px){
+  .brand .mark{font-size:13px;letter-spacing:.14em;}
+  .vol .num{display:none;}
+  input[type=range]{width:64px;}
+  #presetSel{min-width:120px;}
+  #presetBar{flex-wrap:wrap;}
+  #grid{gap:8px;padding:9px;}
+  .card{padding:20px 17px 16px;border-radius:15px;}
+  .hero{font-size:26px;}
+}
+@media (max-width:420px){
+  .seg{width:100%;justify-content:space-between;}
+  .seg button{flex:1;padding:8px 4px;}
+}
 </style>
 </head>
 <body>
 
 <!-- =======================================================================
      音声ファイルの一覧
-     voices フォルダに入れた音声ファイルの名前をここに並べます。
-     拡張子を除いた部分が、そのままパッドの最初の表示名になります。
-     音声を増やすときは、この中に1行足してください。
+     voices フォルダに 01.wav（001.wav でも可）から順の通し番号で入れます。
+     name  … パッドに出る文字
+     color … オレンジ／赤／緑／青／紫／黄緑
+     音声を増やすときは、末尾に1行足して、同じ番号のファイルを voices に。
      ======================================================================= -->
 <script>
 const VOICE_DIR = "voices/";
 const VOICE_EXT = ".wav";
 
-// 上から順に 01.wav, 02.wav, 03.wav … と対応します。
-// name … パッドに出る文字
-// color … オレンジ／赤／緑／青／紫／黄緑
-// 音声を増やすときは、末尾に1行足して、同じ番号のファイルを voices に入れてください。
 const VOICE_LIST = [
   { name:"イントロ",     color:"オレンジ" },  // 01
   { name:"Aメロ",        color:"オレンジ" },  // 02
@@ -253,130 +415,187 @@ const VOICE_FILES = VOICE_LIST.map((_, i) =>
 </script>
 <!-- ===================================================================== -->
 
-<div id="bar">
-  <div class="seg" id="layoutSeg">
-    <button data-l="3x3">3×3</button>
-    <button data-l="4x3">4×3</button>
-    <button data-l="4x4">4×4</button>
-    <button data-l="5x4">5×4</button>
-    <button data-l="6x5">6×5</button>
+<header id="top">
+  <div class="brand">
+    <div class="mark">VOICE PAD</div>
+    <div class="sub">LESSON VOICE CONTROLLER</div>
   </div>
-  <button class="tool" id="editBtn">編集</button>
-  <div class="spacer"></div>
-  <div class="vol"><span>音量</span><input type="range" id="master" min="0" max="100" value="90"></div>
-  <button class="tool" id="stopAll">全部止める</button>
-  <button class="tool" id="helpBtn">使い方</button>
-</div>
 
-<div id="bar2">
-  <span class="cap">組み合わせ</span>
-  <select id="presetSel"></select>
-  <span id="dirty" hidden>未保存</span>
-  <button class="tool sm" id="presetSave">保存</button>
-  <button class="tool sm" id="presetDel">削除</button>
-  <div class="spacer"></div>
-  <button class="tool sm" id="presetOut">書き出し</button>
-  <button class="tool sm" id="presetIn">読み込み</button>
-</div>
-
-<div id="grid"></div>
-
-<div id="foot">
-  <span id="hint">パッドを押すと音が鳴ります。</span>
-  <span><b>VOICEVOX:ずんだもん</b></span>
-</div>
-
-<!-- 起動画面 -->
-<div class="screen" id="startScreen">
-  <div class="card">
-    <h1>ボイスパッド</h1>
-    <p>レッスン中の音声ガイドを、押すだけで鳴らせます。</p>
-    <p class="note">iPad では、画面を一度押すまで音を出せない決まりがあります。下のボタンを押して始めてください。</p>
-    <div id="loadState"></div>
-    <button class="big" id="startBtn">はじめる</button>
+  <div class="seg" id="layoutSeg" role="group" aria-label="レイアウト">
+    <button type="button" data-l="3x3">3×3</button>
+    <button type="button" data-l="4x3">4×3</button>
+    <button type="button" data-l="4x4">4×4</button>
+    <button type="button" data-l="5x4">5×4</button>
+    <button type="button" data-l="6x5">6×5</button>
   </div>
-</div>
 
-<!-- 使い方 -->
-<div class="screen" id="helpScreen" hidden>
-  <div class="card">
-    <h1>使い方</h1>
-    <h2>鳴らす</h2>
-    <p>パッドを押すと音が鳴ります。押している間に別のパッドを押せば、重ねて鳴らせます。全部止めたいときは「全部止める」を押してください。</p>
-    <h2>並びを変える</h2>
-    <p>「編集」を押すと編集中になります。パッドを別のパッドまで指でずらすと、入れ替わります。パッドを軽く押すと、表示名・色・音の割り当て・音量を変えられます。もう一度「編集」を押すと元に戻ります。</p>
-    <h2>パッドの数を変える</h2>
-    <p>左上の 3×3 / 4×3 / 4×4 / 5×4 / 6×5 で切り替わります。それぞれ別々に並びを覚えています。</p>
-    <h2>組み合わせを保存する</h2>
-    <p>並びを作ったら「保存」を押し、名前を付けます。あとから左の欄で選べば、その並びに戻ります。同じ名前で保存すると上書きします。</p>
-    <p>保存したあとにパッドを動かすと「未保存」と出ます。そのままにしておくと、次に選び直したときに動かすまえの並びに戻ります。残したいときは、もう一度「保存」を押してください。</p>
-    <p>組み合わせはパッドの数ごとに分かれています。4×3で作ったものは、4×3のときだけ出てきます。</p>
-    <h2>別の端末に持っていく</h2>
-    <p>組み合わせはその端末にだけ残ります。「書き出し」でファイルに出し、AirDropなどで送った先で「読み込み」を押すと、同じ組み合わせが使えます。同じ名前のものは上書きされます。</p>
-    <h2>音声を増やす</h2>
-    <p>音声ファイルは <code>voices</code> フォルダに、番号だけの名前で入れます。<code>01.wav</code> でも <code>001.wav</code> でも構いません。VOICEVOX の 設定 → オプション → 書き出しファイル名パターン を <code>$連番$</code> だけにしておくと、その名前で書き出されます。</p>
-    <ol>
-      <li>パソコンの VOICEVOX でずんだもんに喋らせ、音声を書き出します。</li>
-      <li>書き出したファイルの名前を、続きの番号（<code>36.wav</code> など）に変えて <code>voices</code> フォルダに入れます。</li>
-      <li>HTML の一覧の末尾に、その表示名と色を1行足します。</li>
-    </ol>
-    <p>iPad から直接足したいときは、編集中にパッドを押して「この端末から音声を追加」を選んでください。追加した音声はこの端末だけに残ります。</p>
-    <h2>反応を速くする</h2>
-    <p>音声ファイルの先頭には、書き出したときの無音が入っていることがあります。そのまま鳴らすと、押してから声が出るまで遅れて感じられます。このアプリは読み込むときに声の始まる位置を自動で探し、そこから鳴らします。音声を切り詰める作業は要りません。</p>
-    <p><label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
-      <input type="checkbox" id="trimChk" style="width:20px;height:20px;">
-      <span style="font-size:14px;color:#c9c4ce;">音の頭の無音を自動で詰める</span>
-    </label></p>
-    <p class="note">頭が切れて聞こえる音声があれば、これを切って、そのファイルだけ手元で切り詰めてください。</p>
-    <h2>音が出ないとき</h2>
-    <p>iPad 本体の音量と、消音の設定を確かめてください。それでも鳴らないときは、画面を読み込み直して「はじめる」を押し直してください。</p>
-    <h2>ホーム画面に置く</h2>
-    <p>Safari の共有ボタンから「ホーム画面に追加」を選ぶと、アプリのように全画面で開けます。</p>
-    <p class="note">音声の読み上げには VOICEVOX:ずんだもん を使用しています。</p>
-    <button class="big" id="helpClose">閉じる</button>
-  </div>
-</div>
+  <div class="grow"></div>
 
-<!-- パッド設定 -->
-<div class="screen" id="padScreen" hidden>
-  <div class="card">
-    <h1 id="padTitle">パッドの設定</h1>
-    <label class="f" for="padLabel">表示名</label>
-    <input type="text" id="padLabel" maxlength="12" placeholder="例：サビ">
-    <label class="f">色</label>
-    <div class="swatches" id="padColors"></div>
-    <label class="f" for="padSound">鳴らす音</label>
-    <select id="padSound"></select>
-    <label class="f" for="padVol">このパッドの音量</label>
-    <input type="range" id="padVol" min="0" max="100" value="100" style="width:100%">
-    <div class="row">
-      <button class="tool" id="padPreview">試しに鳴らす</button>
-      <button class="tool" id="padAdd">この端末から音声を追加</button>
+  <div class="ctrl">
+    <button type="button" class="btn" id="presetsBtn" aria-pressed="true">PRESETS</button>
+    <button type="button" class="btn" id="editBtn" aria-pressed="false">EDIT</button>
+    <div class="vol">
+      <span class="micro">Vol</span>
+      <input type="range" id="master" min="0" max="100" value="90" aria-label="全体の音量">
+      <span class="num" id="volNum">90%</span>
     </div>
-    <div class="row">
-      <button class="tool" id="padClear">空にする</button>
-      <button class="tool" id="padDone" style="background:var(--c0);border-color:var(--c0);color:#241a08;font-weight:700;">保存する</button>
-    </div>
-    <p class="note" id="padNote"></p>
+    <button type="button" class="btn" id="stopAll">STOP ALL</button>
+    <button type="button" class="btn quiet" id="helpBtn">HELP</button>
   </div>
+</header>
+
+<div id="presetBar">
+  <span class="micro">Presets</span>
+  <select id="presetSel" aria-label="組み合わせ"></select>
+  <span class="chip" id="presetState">—</span>
+  <button type="button" class="btn sm" id="presetSave">SAVE</button>
+  <button type="button" class="btn sm danger" id="presetDel">DELETE</button>
+  <div class="grow"></div>
+  <button type="button" class="btn sm quiet" id="presetOut">EXPORT</button>
+  <button type="button" class="btn sm quiet" id="presetIn">IMPORT</button>
 </div>
+
+<div id="editBanner" hidden>
+  <b>EDIT MODE</b>
+  <span>パッドをずらすと入れ替わります。軽く押すと設定を開きます。</span>
+</div>
+
+<main id="grid"></main>
+
+<footer id="status">
+  <span class="chip" id="stChip">READY</span>
+  <span id="stInfo"></span>
+  <div class="grow"></div>
+  <span class="credit">VOICEVOX:ずんだもん</span>
+</footer>
 
 <input type="file" id="filePicker" accept="audio/*" multiple hidden>
 <input type="file" id="presetFile" accept="application/json,.json" hidden>
 
-<!-- 名前を尋ねる／確認する -->
-<div class="screen" id="askScreen" hidden>
+<!-- ============ 起動画面 ============ -->
+<div class="screen" id="startScreen">
   <div class="card">
-    <h1 id="askTitle">名前を付ける</h1>
-    <p id="askText"></p>
-    <input type="text" id="askInput" maxlength="24" placeholder="例：バンド練習">
-    <div class="row">
-      <button class="tool" id="askCancel">やめる</button>
-      <button class="tool" id="askOk" style="background:var(--c0);border-color:var(--c0);color:#241a08;font-weight:700;">決定</button>
+    <div class="hero">VOICE PAD</div>
+    <div class="heroSub">LESSON VOICE CONTROLLER</div>
+    <div class="specs">
+      <div class="spec"><div class="n" id="specVoices">35</div><div class="k">Voices</div></div>
+      <div class="spec"><div class="n">5</div><div class="k">Layouts</div></div>
+      <div class="spec"><div class="n" id="specState">READY</div><div class="k">Status</div></div>
+    </div>
+    <div id="bar"><div id="barFill"></div></div>
+    <div id="loadState">はじめるを押すと音声を読み込みます。</div>
+    <button class="big" id="startBtn">START</button>
+  </div>
+</div>
+
+<!-- ============ 使い方 ============ -->
+<div class="screen" id="helpScreen" hidden>
+  <div class="card wide">
+    <h1>HELP</h1>
+    <p class="lead">使い方</p>
+
+    <h2>鳴らす</h2>
+    <p>パッドを押すと音が鳴ります。押している間に別のパッドを押せば、重ねて鳴らせます。鳴っている間はパッドの色帯が光り、下に PLAYING と出ます。まとめて止めたいときは STOP ALL を押してください。</p>
+
+    <h2>並びを変える</h2>
+    <p>EDIT を押すと編集中になります。パッドを別のパッドまで指でずらすと入れ替わり、軽く押すと設定が開きます。設定では表示名・色・鳴らす音・そのパッドの音量を変えられます。もう一度 EDIT を押すと演奏の画面に戻ります。</p>
+
+    <h2>パッドの数を変える</h2>
+    <p>上の 3×3 / 4×3 / 4×4 / 5×4 / 6×5 で切り替わります。それぞれ別々に並びを覚えています。</p>
+
+    <h2>組み合わせを保存する</h2>
+    <p>並びを作ったら SAVE を押し、名前を付けます。あとから左の欄で選べばその並びに戻ります。同じ名前で保存すると上書きします。</p>
+    <p>保存したあとにパッドを動かすと MODIFIED と出ます。そのままにしておくと、次に選び直したときに動かすまえの並びに戻ります。残したいときはもう一度 SAVE を押してください。</p>
+    <p>組み合わせはパッドの数ごとに分かれています。4×3で作ったものは4×3のときだけ出てきます。PRESETS を押すと、この行を隠せます。</p>
+
+    <h2>別の端末に持っていく</h2>
+    <p>組み合わせはその端末にだけ残ります。EXPORT でファイルに出し、AirDropなどで送った先で IMPORT を押すと同じ組み合わせが使えます。同じ名前のものは上書きされます。</p>
+
+    <h2>音声を増やす</h2>
+    <p>音声ファイルは <code>voices</code> フォルダに、番号だけの名前で入れます。<code>01.wav</code> でも <code>001.wav</code> でも構いません。VOICEVOX の 設定 → オプション → 書き出しファイル名パターン を <code>$連番$</code> だけにしておくと、その名前で書き出されます。</p>
+    <ol>
+      <li>VOICEVOX で音声を書き出します。</li>
+      <li>続きの番号（<code>36.wav</code> など）にして <code>voices</code> フォルダに入れます。</li>
+      <li>この HTML ファイルの上のほうにある一覧の末尾に、表示名と色を1行足します。</li>
+    </ol>
+    <p>この端末にだけ足したいときは、編集中にパッドを押して「この端末から音声を追加」を選んでください。</p>
+
+    <h2>反応を速くする</h2>
+    <p>音声ファイルの先頭には、書き出したときの無音が入っていることがあります。そのまま鳴らすと、押してから声が出るまで遅れて感じられます。このアプリは読み込むときに声の始まる位置を自動で探し、そこから鳴らします。音声を切り詰める作業は要りません。</p>
+    <p><label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+      <input type="checkbox" id="trimChk" style="width:20px;height:20px;">
+      <span style="font-size:13.5px;color:#c5c0cb;">音の頭の無音を自動で詰める</span>
+    </label></p>
+    <p class="note">頭が切れて聞こえる音声があれば、これを切って、そのファイルだけ手元で切り詰めてください。</p>
+
+    <h2>キーボード</h2>
+    <p>パッドは Tab で選び、Enter か Space で鳴らせます。画面が開いているときは Esc で閉じ、名前の入力は Enter で決定します。</p>
+
+    <h2>音が出ないとき</h2>
+    <p>本体の音量と消音の設定を確かめてください。それでも鳴らないときは、画面を読み込み直して START を押し直してください。</p>
+
+    <h2>ホーム画面に置く</h2>
+    <p>Safari の共有ボタンから「ホーム画面に追加」を選ぶと、アプリのように全画面で開けます。</p>
+
+    <p class="note">音声の読み上げには VOICEVOX:ずんだもん を使用しています。</p>
+    <button class="big" id="helpClose">CLOSE</button>
+  </div>
+</div>
+
+<!-- ============ パッド設定 ============ -->
+<div class="screen" id="padScreen" hidden>
+  <div class="card">
+    <h1 id="padTitle">PAD 01</h1>
+    <p class="lead" id="padLead">パッドの設定</p>
+
+    <div class="sect">
+      <label class="f micro" for="padLabel">Label</label>
+      <input type="text" id="padLabel" maxlength="12" placeholder="例：サビ">
+    </div>
+
+    <div class="sect">
+      <label class="f micro">Color</label>
+      <div class="swatches" id="padColors"></div>
+    </div>
+
+    <div class="sect">
+      <label class="f micro" for="padSound">Audio</label>
+      <select id="padSound"></select>
+      <div class="acts split">
+        <button type="button" class="btn" id="padPreview">▶ 試しに鳴らす</button>
+        <button type="button" class="btn quiet" id="padAdd">この端末から音声を追加</button>
+      </div>
+      <p class="note" id="padNote"></p>
+    </div>
+
+    <div class="sect">
+      <label class="f micro" for="padVol">Volume</label>
+      <div class="rowflex">
+        <input type="range" id="padVol" min="0" max="100" value="100">
+        <span class="num" id="padVolNum">100%</span>
+      </div>
+    </div>
+
+    <div class="acts">
+      <button type="button" class="btn quiet" id="padClear">空にする</button>
+      <button type="button" class="btn quiet" id="padClose">閉じる</button>
+      <button type="button" class="btn primary" id="padDone">保存する</button>
     </div>
   </div>
 </div>
 
+<!-- ============ 名前入力・確認 ============ -->
+<div class="screen" id="askScreen" hidden>
+  <div class="card">
+    <h1 id="askTitle">SAVE</h1>
+    <p id="askText"></p>
+    <input type="text" id="askInput" maxlength="24" placeholder="例：バンド練習">
+    <div class="acts">
+      <button type="button" class="btn quiet" id="askCancel">やめる</button>
+      <button type="button" class="btn primary" id="askOk">決定</button>
+    </div>
+  </div>
+</div>
 <script>
 "use strict";
 
@@ -390,7 +609,8 @@ const LAYOUTS = {
   "5x4": {cols:5, rows:4, n:20},
   "6x5": {cols:6, rows:5, n:30}
 };
-const COLORS = ["#f2a33c","#e4695e","#56c3a0","#5aa9e6","#ad8ce8","#c3d456"];
+const COLORS = ["#f0a13c","#e46a5e","#4fc3a1","#5aa5e6","#a98ce6","#bcd257"];
+const COLOR_NAMES = ["オレンジ","赤","緑","青","紫","黄緑"];
 const STORE_KEY = "voicepad.v3";
 
 /* ------------------------------------------------------------------ */
@@ -430,7 +650,22 @@ function initAudio(){
   masterGain.connect(ctx.destination);
 }
 
-function play(slot){
+/* どのパッドがいま鳴っているか */
+const playing = new Map();
+function markPlaying(i, delta){
+  if (i === null || i === undefined) return;
+  const n = (playing.get(i) || 0) + delta;
+  if (n <= 0) playing.delete(i); else playing.set(i, n);
+  const el = padEls[i];
+  if (el){
+    el.classList.toggle("playing", playing.has(i));
+    const st = el.querySelector(".pstate");
+    if (st && !el.classList.contains("empty") && !el.classList.contains("missing"))
+      st.textContent = playing.has(i) ? "Playing" : "";
+  }
+}
+
+function play(slot, padIndex){
   if (!ctx || !slot || !slot.id) return false;
   const buf = buffers.get(slot.id);
   if (!buf) return false;
@@ -442,13 +677,24 @@ function play(slot){
   const t = state.trim ? trims.get(slot.id) : null;
   if (t) src.start(0, t.start, t.dur); else src.start();
   voices.push(src);
-  src.onended = () => { voices = voices.filter(v => v !== src); };
+  markPlaying(padIndex, 1);
+  src.onended = () => {
+    voices = voices.filter(v => v !== src);
+    markPlaying(padIndex, -1);
+  };
   return true;
 }
 
 function stopAll(){
   voices.forEach(v => { try { v.stop(); } catch(e){} });
   voices = [];
+  [...playing.keys()].forEach(i => { playing.set(i, 0); markPlaying(i, 0); });
+  playing.clear();
+  padEls.forEach(el => {
+    el.classList.remove("playing");
+    const st = el.querySelector(".pstate");
+    if (st && !el.classList.contains("empty") && !el.classList.contains("missing")) st.textContent = "";
+  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -489,21 +735,21 @@ async function idbAll(){
 /* 状態                                                                */
 /* ------------------------------------------------------------------ */
 function baseName(f){ return f.replace(/\.[^.]+$/, ""); }
-
-const COLOR_NAMES = ["オレンジ","赤","緑","青","紫","黄緑"];
 function colorIndex(v){
   const i = COLOR_NAMES.indexOf(v);
   return i < 0 ? 0 : i;
 }
 
-/* ファイル名（01.wav など）から表示名を引く */
+/* ファイル名（01.wav など）から表示名・番号を引く */
 const NAMES = new Map(VOICE_FILES.map((f, i) => [f, VOICE_LIST[i].name]));
+const NUMS  = new Map(VOICE_FILES.map((f, i) => [f, String(i + 1).padStart(2, "0")]));
 function nameOf(id){
   if (!id) return "";
   if (NAMES.has(id)) return NAMES.get(id);
   const lib = library.find(x => x.id === id);
   return lib ? lib.name : baseName(id.replace(/^local:/, ""));
 }
+function numOf(id){ return id && NUMS.has(id) ? NUMS.get(id) : "--"; }
 
 function emptySlot(){ return {id:null, label:"", color:0, vol:1}; }
 
@@ -523,24 +769,26 @@ function defaultPreset(n, key){
   return slots;
 }
 
-let state = {
-  layout: "4x3",
-  master: 0.9,
-  trim: true,
-  saved: [],     // {name, layout, slots}
-  picked: {},    // レイアウトごとに、いま選んでいる組み合わせの名前
-  presets: buildDefaults()
-};
-
 function buildDefaults(){
   const o = {};
   for (const k of Object.keys(LAYOUTS)) o[k] = defaultPreset(LAYOUTS[k].n, k);
   return o;
 }
 
+let state = {
+  layout: "4x3",
+  master: 0.9,
+  trim: true,
+  showPresets: true,
+  saved: [],     // {name, layout, slots}
+  picked: {},    // レイアウトごとに、いま選んでいる組み合わせの名前
+  presets: buildDefaults()
+};
+
 function save(){
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e){}
 }
+
 /* 保存データは古い形や壊れた形も来うるので、必ず整えてから使う */
 function tidySlots(arr, want){
   let a = Array.isArray(arr) ? arr.slice(0, want) : [];
@@ -585,6 +833,7 @@ function load(){
       layout: LAYOUTS[s.layout] ? s.layout : "4x3",
       master: typeof s.master === "number" ? s.master : 0.9,
       trim: s.trim !== false,
+      showPresets: s.showPresets !== false,
       saved: tidySaved(s.saved),
       picked,
       presets
@@ -596,6 +845,7 @@ function load(){
 /* 読み込み                                                            */
 /* ------------------------------------------------------------------ */
 const loadState = document.getElementById("loadState");
+const barFill = document.getElementById("barFill");
 const missing = [];
 
 async function decodeInto(id, name, arrayBuf, local){
@@ -639,9 +889,11 @@ async function fetchVoice(num){
 async function loadAll(){
   let done = 0;
   const total = VOICE_FILES.length;
+  setStatus("loading");
   for (let i = 0; i < total; i++){
     const f = VOICE_FILES[i];
     loadState.textContent = "音声を読み込んでいます… " + done + " / " + total;
+    barFill.style.width = (done / total * 100) + "%";
     try {
       const buf = await fetchVoice(i + 1);
       if (!buf) throw new Error("not found");
@@ -651,18 +903,47 @@ async function loadAll(){
     }
     done++;
   }
+  barFill.style.width = "100%";
   const saved = await idbAll();
   for (const rec of saved){
     try { await decodeInto("local:" + rec.name, rec.name, await rec.blob.arrayBuffer(), true); }
     catch(e){}
   }
+  document.getElementById("specVoices").textContent = (total - missing.length) + "";
   if (missing.length){
     loadState.innerHTML = '<span class="err">' + missing.map(baseName).join("、") +
       ' が見つかりません。voices フォルダの中身が、番号だけの名前（01.wav、001.wav など）に' +
       'なっているか確かめてください。</span>';
+    setStatus("error");
   } else {
     loadState.textContent = "音声の読み込みが終わりました。";
+    setStatus("ready");
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* ステータス表示                                                      */
+/* ------------------------------------------------------------------ */
+const stChip = document.getElementById("stChip");
+const stInfo = document.getElementById("stInfo");
+let statusKind = "idle";
+
+function setStatus(kind){
+  statusKind = kind;
+  const label = {idle:"IDLE", loading:"LOADING", ready:"READY", error:"ERROR"}[kind] || "READY";
+  stChip.textContent = label;
+  stChip.className = "chip " + (kind === "error" ? "err" : kind === "ready" ? "done" : "saved");
+  const sp = document.getElementById("specState");
+  if (sp) sp.textContent = label;
+  refreshInfo();
+}
+
+function refreshInfo(){
+  const L = state.layout.replace("x", "×");
+  const okCount = VOICE_FILES.filter(f => buffers.has(f)).length;
+  const extra = library.filter(v => v.local).length;
+  stInfo.textContent = L + " · " + okCount + "/" + VOICE_FILES.length + " VOICES" +
+    (extra ? " (+" + extra + ")" : "");
 }
 
 /* ------------------------------------------------------------------ */
@@ -670,6 +951,7 @@ async function loadAll(){
 /* ------------------------------------------------------------------ */
 const grid = document.getElementById("grid");
 let editing = false;
+let padEls = [];
 
 function slots(){ return state.presets[state.layout]; }
 
@@ -679,36 +961,47 @@ function render(){
   grid.style.gridTemplateColumns = "repeat(" + L.cols + ",1fr)";
   grid.style.gridTemplateRows = "repeat(" + L.rows + ",1fr)";
   grid.innerHTML = "";
+  padEls = [];
+
   slots().forEach((s, i) => {
-    const el = document.createElement("div");
-    el.className = "pad" + (s.id && buffers.has(s.id) ? "" : " empty");
+    const has = s.id && buffers.has(s.id);
+    const el = document.createElement("button");
+    el.type = "button";
+    el.className = "pad" + (s.id ? (has ? "" : " missing") : " empty");
     el.style.setProperty("--hue", COLORS[s.color] || COLORS[0]);
     el.dataset.i = i;
-    const lab = document.createElement("div");
-    lab.className = "label";
+
+    const bar = document.createElement("span"); bar.className = "bar";
+    const tint = document.createElement("span"); tint.className = "tint";
+    const num = document.createElement("span"); num.className = "pnum";
+    num.textContent = s.id ? numOf(s.id) : "--";
+    const lab = document.createElement("span"); lab.className = "plabel";
     lab.textContent = s.label || (s.id ? nameOf(s.id) : "空き");
-    el.appendChild(lab);
-    if (s.id && !buffers.has(s.id)){
-      const b = document.createElement("div");
-      b.className = "badge";
-      b.textContent = "音がありません";
-      el.appendChild(b);
-    }
+    const st = document.createElement("span"); st.className = "pstate";
+    st.textContent = !s.id ? "No Audio" : (has ? (playing.has(i) ? "Playing" : "") : "File Missing");
+
+    el.append(bar, tint, num, lab, st);
+    el.setAttribute("aria-label", (s.label || nameOf(s.id) || "空き"));
+    if (playing.has(i)) el.classList.add("playing");
     grid.appendChild(el);
+    padEls.push(el);
   });
+
   document.querySelectorAll("#layoutSeg button").forEach(b =>
     b.classList.toggle("on", b.dataset.l === state.layout));
-  document.getElementById("editBtn").classList.toggle("on", editing);
+  const eb = document.getElementById("editBtn");
+  eb.classList.toggle("on", editing);
+  eb.textContent = editing ? "EDITING" : "EDIT";
+  eb.setAttribute("aria-pressed", editing ? "true" : "false");
   document.body.classList.toggle("editing", editing);
-  document.getElementById("hint").textContent = editing
-    ? "パッドをずらすと入れ替わります。軽く押すと設定を変えられます。"
-    : "パッドを押すと音が鳴ります。";
+  document.getElementById("editBanner").hidden = !editing;
+  refreshInfo();
   if (typeof refreshPresets === "function") refreshPresets();
 }
 
 function flash(el){
   el.classList.add("hit");
-  setTimeout(() => el.classList.remove("hit"), 130);
+  setTimeout(() => el.classList.remove("hit"), 140);
 }
 
 /* ------------------------------------------------------------------ */
@@ -723,7 +1016,7 @@ grid.addEventListener("pointerdown", e => {
   const i = +pad.dataset.i;
 
   if (!editing){
-    if (play(slots()[i])) flash(pad);
+    if (play(slots()[i], i)) flash(pad);
     return;
   }
   drag = {from:i, el:pad, x:e.clientX, y:e.clientY, moved:false, over:null};
@@ -759,31 +1052,58 @@ function endDrag(){
 grid.addEventListener("pointerup", endDrag);
 grid.addEventListener("pointercancel", endDrag);
 
+/* キーボードから鳴らす（Enter / Space）。マウスの click とは区別する */
+grid.addEventListener("click", e => {
+  if (e.detail !== 0) return;
+  const pad = e.target.closest(".pad");
+  if (!pad) return;
+  const i = +pad.dataset.i;
+  if (editing) openPad(i);
+  else if (play(slots()[i], i)) flash(pad);
+});
+
 /* ------------------------------------------------------------------ */
 /* ヘッダー                                                            */
 /* ------------------------------------------------------------------ */
 document.getElementById("layoutSeg").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
-  state.layout = b.dataset.l; save(); render();
+  state.layout = b.dataset.l;
+  playing.clear();
+  save(); render();
 });
 document.getElementById("editBtn").addEventListener("click", () => {
   editing = !editing; render();
 });
 document.getElementById("stopAll").addEventListener("click", stopAll);
+
+const volNum = document.getElementById("volNum");
 document.getElementById("master").addEventListener("input", e => {
   state.master = e.target.value / 100;
+  volNum.textContent = e.target.value + "%";
   if (masterGain) masterGain.gain.value = state.master;
   save();
 });
+
+document.getElementById("presetsBtn").addEventListener("click", () => {
+  state.showPresets = !state.showPresets;
+  applyPresetBar(); save();
+});
+function applyPresetBar(){
+  const b = document.getElementById("presetsBtn");
+  document.getElementById("presetBar").hidden = !state.showPresets;
+  b.classList.toggle("on", state.showPresets);
+  b.setAttribute("aria-pressed", state.showPresets ? "true" : "false");
+}
+
 document.getElementById("helpBtn").addEventListener("click", () => {
   document.getElementById("trimChk").checked = state.trim;
   document.getElementById("helpScreen").hidden = false;
 });
+document.getElementById("helpClose").addEventListener("click", () =>
+  document.getElementById("helpScreen").hidden = true);
 document.getElementById("trimChk").addEventListener("change", e => {
   state.trim = e.target.checked; save();
 });
-document.getElementById("helpClose").addEventListener("click", () =>
-  document.getElementById("helpScreen").hidden = true);
 
 /* ------------------------------------------------------------------ */
 /* パッド設定画面                                                      */
@@ -792,13 +1112,16 @@ const padScreen = document.getElementById("padScreen");
 const padLabel = document.getElementById("padLabel");
 const padSound = document.getElementById("padSound");
 const padVol = document.getElementById("padVol");
+const padVolNum = document.getElementById("padVolNum");
 const padColors = document.getElementById("padColors");
 const padNote = document.getElementById("padNote");
 let editIndex = -1, editColor = 0;
 
 COLORS.forEach((c, i) => {
   const b = document.createElement("button");
+  b.type = "button";
   b.className = "sw"; b.style.background = c; b.dataset.c = i;
+  b.setAttribute("aria-label", COLOR_NAMES[i]);
   padColors.appendChild(b);
 });
 padColors.addEventListener("click", e => {
@@ -806,6 +1129,8 @@ padColors.addEventListener("click", e => {
   editColor = +b.dataset.c;
   [...padColors.children].forEach(x => x.classList.toggle("on", +x.dataset.c === editColor));
 });
+
+padVol.addEventListener("input", () => { padVolNum.textContent = padVol.value + "%"; });
 
 function fillSounds(selected){
   padSound.innerHTML = "";
@@ -815,7 +1140,7 @@ function fillSounds(selected){
   library.forEach(v => {
     const o = document.createElement("option");
     o.value = v.id;
-    o.textContent = v.name + (v.local ? "（この端末）" : "");
+    o.textContent = (NUMS.has(v.id) ? NUMS.get(v.id) + " " : "") + v.name + (v.local ? "（この端末）" : "");
     padSound.appendChild(o);
   });
   padSound.value = selected && buffers.has(selected) ? selected : "";
@@ -832,12 +1157,16 @@ function trimNote(id){
 function openPad(i){
   editIndex = i;
   const s = slots()[i];
-  document.getElementById("padTitle").textContent = (i + 1) + "番目のパッド";
+  document.getElementById("padTitle").textContent =
+    "PAD " + String(i + 1).padStart(2, "0");
+  document.getElementById("padLead").textContent =
+    (s.id ? "音声 " + numOf(s.id) + "　" + nameOf(s.id) : "音声が入っていません");
   padLabel.value = s.label || "";
   editColor = s.color || 0;
   [...padColors.children].forEach(x => x.classList.toggle("on", +x.dataset.c === editColor));
   fillSounds(s.id);
   padVol.value = Math.round((s.vol ?? 1) * 100);
+  padVolNum.textContent = padVol.value + "%";
   padNote.textContent = trimNote(padSound.value);
   padScreen.hidden = false;
 }
@@ -848,9 +1177,15 @@ padSound.addEventListener("change", () => {
     if (v) padLabel.value = v.name;
   }
   padNote.textContent = trimNote(padSound.value);
+  document.getElementById("padLead").textContent = padSound.value
+    ? "音声 " + numOf(padSound.value) + "　" + nameOf(padSound.value)
+    : "音声が入っていません";
 });
 document.getElementById("padPreview").addEventListener("click", () =>
-  play({id:padSound.value, vol:padVol.value / 100}));
+  play({id:padSound.value, vol:padVol.value / 100}, null));
+document.getElementById("padClose").addEventListener("click", () => {
+  padScreen.hidden = true;
+});
 document.getElementById("padClear").addEventListener("click", () => {
   slots()[editIndex] = emptySlot();
   padScreen.hidden = true; save(); render();
@@ -891,6 +1226,7 @@ picker.addEventListener("change", async () => {
       if (v) padLabel.value = v.name;
     }
     padNote.textContent = files.length + " 件を追加しました。";
+    refreshInfo();
   }
 });
 
@@ -898,7 +1234,8 @@ picker.addEventListener("change", async () => {
 /* 組み合わせ（プリセット）                                            */
 /* ------------------------------------------------------------------ */
 const presetSel = document.getElementById("presetSel");
-const dirtyMark = document.getElementById("dirty");
+const presetState = document.getElementById("presetState");
+let flashTimer = null, flashUntil = 0;
 
 function savedFor(layout){ return state.saved.filter(p => p.layout === layout); }
 function findPreset(name, layout){
@@ -908,8 +1245,24 @@ function pickedName(){ return state.picked[state.layout] || ""; }
 
 function isDirty(){
   const p = findPreset(pickedName(), state.layout);
-  if (!p) return state.saved.length > 0 || pickedName() !== "";
+  if (!p) return false;
   return JSON.stringify(p.slots) !== JSON.stringify(slots());
+}
+
+function setPresetState(kind){
+  if (kind === "done"){
+    clearTimeout(flashTimer);
+    flashUntil = Date.now() + 1800;
+    presetState.textContent = "✓ Saved";
+    presetState.className = "chip done";
+    flashTimer = setTimeout(() => { flashUntil = 0; refreshPresets(); }, 1800);
+    return;
+  }
+  /* 「保存しました」を出している間は、他からの更新で消さない */
+  if (Date.now() < flashUntil) return;
+  if (!presetSel.value){ presetState.textContent = "—"; presetState.className = "chip"; return; }
+  if (isDirty()){ presetState.textContent = "Modified"; presetState.className = "chip mod"; }
+  else { presetState.textContent = "Saved"; presetState.className = "chip saved"; }
 }
 
 function refreshPresets(){
@@ -926,7 +1279,7 @@ function refreshPresets(){
   });
   presetSel.value = findPreset(pickedName(), state.layout) ? pickedName() : "";
   document.getElementById("presetDel").disabled = !presetSel.value;
-  dirtyMark.hidden = !(presetSel.value && isDirty());
+  setPresetState();
 }
 
 presetSel.addEventListener("change", () => {
@@ -938,20 +1291,20 @@ presetSel.addEventListener("change", () => {
 });
 
 document.getElementById("presetSave").addEventListener("click", async () => {
-  const name = await ask("組み合わせを保存", "名前を付けてください。同じ名前にすると上書きします。", pickedName());
+  const name = await ask("SAVE PRESET", "名前を付けてください。同じ名前にすると上書きします。", pickedName());
   if (!name) return;
   const copy = JSON.parse(JSON.stringify(slots()));
   const exist = findPreset(name, state.layout);
   if (exist) exist.slots = copy;
   else state.saved.push({name, layout:state.layout, slots:copy});
   state.picked[state.layout] = name;
-  save(); refreshPresets();
+  save(); refreshPresets(); setPresetState("done");
 });
 
 document.getElementById("presetDel").addEventListener("click", async () => {
   const name = presetSel.value;
   if (!name) return;
-  const yes = await ask("組み合わせを削除", "「" + name + "」を削除します。よろしいですか。", null);
+  const yes = await ask("DELETE PRESET", "「" + name + "」を削除します。よろしいですか。", null);
   if (!yes) return;
   state.saved = state.saved.filter(p => !(p.name === name && p.layout === state.layout));
   state.picked[state.layout] = "";
@@ -977,7 +1330,7 @@ presetFile.addEventListener("change", async () => {
   try {
     const data = JSON.parse(await f.text());
     const incoming = tidySaved(data && data.saved);
-    if (!incoming.length){ await ask("読み込み", "組み合わせが入っていないファイルです。", null); return; }
+    if (!incoming.length){ await ask("IMPORT", "組み合わせが入っていないファイルです。", null); return; }
     let added = 0, over = 0;
     for (const p of incoming){
       const exist = findPreset(p.name, p.layout);
@@ -985,13 +1338,13 @@ presetFile.addEventListener("change", async () => {
       else { state.saved.push(p); added++; }
     }
     save(); refreshPresets();
-    await ask("読み込み", added + " 件を追加し、" + over + " 件を上書きしました。", null);
+    await ask("IMPORT", added + " 件を追加し、" + over + " 件を上書きしました。", null);
   } catch(e){
-    await ask("読み込み", "このファイルは読み込めませんでした。", null);
+    await ask("IMPORT", "このファイルは読み込めませんでした。", null);
   }
 });
 
-/* 名前を尋ねる／確認する。text だけのときは確認、既定値を渡すと入力欄が出る */
+/* 名前を尋ねる／確認する。initial に文字列を渡すと入力欄が出る */
 const askScreen = document.getElementById("askScreen");
 const askInput = document.getElementById("askInput");
 let askResolve = null;
@@ -1017,17 +1370,35 @@ askInput.addEventListener("keydown", e => {
   if (e.key === "Enter") closeAsk(askInput.value.trim());
 });
 
+/* 画面の外側を押す／Esc で閉じる */
+[["padScreen"], ["helpScreen"]].forEach(([id]) => {
+  const el = document.getElementById(id);
+  el.addEventListener("pointerdown", e => { if (e.target === el) el.hidden = true; });
+});
+askScreen.addEventListener("pointerdown", e => { if (e.target === askScreen) closeAsk(null); });
+
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  if (!askScreen.hidden){ closeAsk(null); return; }
+  if (!padScreen.hidden){ padScreen.hidden = true; return; }
+  const h = document.getElementById("helpScreen");
+  if (!h.hidden){ h.hidden = true; return; }
+});
+
 /* ------------------------------------------------------------------ */
 /* 起動                                                                */
 /* ------------------------------------------------------------------ */
 load();
 document.getElementById("master").value = Math.round(state.master * 100);
+volNum.textContent = Math.round(state.master * 100) + "%";
+applyPresetBar();
+setStatus("idle");
 render();
 
 const startBtn = document.getElementById("startBtn");
 startBtn.addEventListener("click", async () => {
   startBtn.disabled = true;
-  startBtn.textContent = "読み込み中…";
+  startBtn.textContent = "LOADING…";
   try {
     if (navigator.audioSession) navigator.audioSession.type = "playback";
   } catch(e){}
@@ -1042,7 +1413,6 @@ startBtn.addEventListener("click", async () => {
 
 document.addEventListener("gesturestart", e => e.preventDefault());
 document.addEventListener("dblclick", e => e.preventDefault());
-window.addEventListener("resize", () => {});
 </script>
 </body>
 </html>
