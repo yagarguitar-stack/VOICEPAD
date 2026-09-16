@@ -66,10 +66,28 @@ input[type=range]::-webkit-slider-thumb{
 input[type=range]::-moz-range-track{height:4px;background:var(--line);border-radius:2px;}
 input[type=range]::-moz-range-thumb{width:20px;height:20px;border:none;border-radius:50%;background:var(--ink);}
 
+#bar2{
+  flex:0 0 auto;display:flex;align-items:center;gap:8px;
+  padding:7px 12px;background:var(--chassis);
+  border-bottom:1px solid var(--line);
+}
+#bar2 .cap{font-size:12px;color:var(--dim);}
+#bar2 select{
+  width:auto;min-width:160px;max-width:44vw;padding:7px 10px;font-size:14px;
+  border-radius:9px;background:var(--panel);border:1px solid var(--line);color:var(--ink);
+}
+.tool.sm{padding:7px 11px;font-size:13px;}
+#dirty{
+  font-size:11px;color:#241a08;background:var(--c0);
+  padding:3px 8px;border-radius:20px;font-weight:600;
+}
+#dirty[hidden]{display:none;}
+
 /* ---------- pads ---------- */
 #grid{
   flex:1 1 auto;display:grid;gap:10px;padding:12px;min-height:0;
 }
+#grid.dense{gap:6px;padding:8px;}
 .pad{
   position:relative;border-radius:14px;
   background:linear-gradient(180deg,var(--panel-hi),#191820);
@@ -88,6 +106,9 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border:none;border-ra
   font-size:clamp(13px,2.4vw,21px);font-weight:600;line-height:1.25;
   word-break:break-word;color:var(--ink);
 }
+#grid.dense .pad{border-radius:10px;padding:4px;}
+#grid.dense .pad .label{font-size:clamp(11px,1.5vw,16px);}
+#grid.dense .badge{font-size:9px;top:3px;right:5px;}
 .pad.empty{background:#17161c;box-shadow:none;border-style:dashed;}
 .pad.empty::after{opacity:.12;}
 .pad.empty .label{color:#55515c;font-weight:400;}
@@ -180,34 +201,51 @@ const VOICE_LIST = [
   { name:"ギターソロ",   color:"緑"       },  // 11
   { name:"リピート",     color:"青"       },  // 12
   { name:"ダルセーニョ", color:"青"       },  // 13
-  { name:"コーダへ",     color:"青"       },  // 14
-  { name:"リット",       color:"青"       },  // 15
-  { name:"フェルマータ", color:"青"       },  // 16
-  { name:"間奏",         color:"緑"       },  // 17
-  { name:"アウトロ",     color:"オレンジ" },  // 18
-  { name:"エンディング", color:"オレンジ" },  // 19
-  { name:"よく聴いて",   color:"赤"       },  // 20
-  { name:"速すぎ",       color:"赤"       },  // 21
-  { name:"遅すぎ",       color:"赤"       },  // 22
-  { name:"ズレてる",     color:"赤"       },  // 23
-  { name:"いち",         color:"紫"       },  // 24
-  { name:"に",           color:"紫"       },  // 25
-  { name:"さん",         color:"紫"       },  // 26
-  { name:"し",           color:"紫"       }   // 27
+  { name:"ダカーポ",     color:"青"       },  // 14
+  { name:"コーダへ",     color:"青"       },  // 15
+  { name:"リット",       color:"青"       },  // 16
+  { name:"フェルマータ", color:"青"       },  // 17
+  { name:"間奏",         color:"緑"       },  // 18
+  { name:"アウトロ",     color:"オレンジ" },  // 19
+  { name:"エンディング", color:"オレンジ" },  // 20
+  { name:"よく聴いて",   color:"赤"       },  // 21
+  { name:"速すぎ",       color:"赤"       },  // 22
+  { name:"遅すぎ",       color:"赤"       },  // 23
+  { name:"ズレてる",     color:"赤"       },  // 24
+  { name:"いち",         color:"紫"       },  // 25
+  { name:"に",           color:"紫"       },  // 26
+  { name:"さん",         color:"紫"       },  // 27
+  { name:"し",           color:"紫"       },  // 28
+  { name:"とお",         color:"紫"       },  // 29
+  { name:"一拍目",       color:"赤"       },  // 30
+  { name:"いい感じ",     color:"黄緑"     },  // 31
+  { name:"あと3回",      color:"紫"       },  // 32
+  { name:"あと2回",      color:"紫"       },  // 33
+  { name:"あと1回",      color:"紫"       },  // 34
+  { name:"よくできました", color:"黄緑"   }   // 35
 ];
 
-// 画面ごとの最初の並び。数字は上の一覧の番号です。
+// 画面ごとの最初の並び。数字は上の一覧の番号です。0 は空きです。
 const DEFAULT_PADS = {
   "3x3": [ 1, 2, 3,
-           4,17,11,
-          18,20,23],
+           4,18,11,
+          19,21,24],
   "4x3": [ 1, 2, 3, 4,
-           5,17,11,18,
-          24,25,26,27],
+           5,18,11,19,
+          25,26,27,28],
   "4x4": [ 1, 2, 3, 4,
-           5, 6,17,11,
-          18,19,12,13,
-          24,25,26,27]
+           5,18,11,19,
+          12,21,24,31,
+          25,26,27,28],
+  "5x4": [ 1, 2, 3, 4, 5,
+           6,18,11,19,20,
+          12,13,21,22,24,
+          25,26,27,28,31],
+  "6x5": [ 1, 2, 3, 4, 5, 6,
+           7, 8, 9,10,11,18,
+          19,20,12,13,14,15,
+          16,17,21,22,23,24,
+          25,26,27,28,31,35]
 };
 
 const VOICE_FILES = VOICE_LIST.map((_, i) =>
@@ -220,12 +258,25 @@ const VOICE_FILES = VOICE_LIST.map((_, i) =>
     <button data-l="3x3">3×3</button>
     <button data-l="4x3">4×3</button>
     <button data-l="4x4">4×4</button>
+    <button data-l="5x4">5×4</button>
+    <button data-l="6x5">6×5</button>
   </div>
   <button class="tool" id="editBtn">編集</button>
   <div class="spacer"></div>
   <div class="vol"><span>音量</span><input type="range" id="master" min="0" max="100" value="90"></div>
   <button class="tool" id="stopAll">全部止める</button>
   <button class="tool" id="helpBtn">使い方</button>
+</div>
+
+<div id="bar2">
+  <span class="cap">組み合わせ</span>
+  <select id="presetSel"></select>
+  <span id="dirty" hidden>未保存</span>
+  <button class="tool sm" id="presetSave">保存</button>
+  <button class="tool sm" id="presetDel">削除</button>
+  <div class="spacer"></div>
+  <button class="tool sm" id="presetOut">書き出し</button>
+  <button class="tool sm" id="presetIn">読み込み</button>
 </div>
 
 <div id="grid"></div>
@@ -255,12 +306,18 @@ const VOICE_FILES = VOICE_LIST.map((_, i) =>
     <h2>並びを変える</h2>
     <p>「編集」を押すと編集中になります。パッドを別のパッドまで指でずらすと、入れ替わります。パッドを軽く押すと、表示名・色・音の割り当て・音量を変えられます。もう一度「編集」を押すと元に戻ります。</p>
     <h2>パッドの数を変える</h2>
-    <p>左上の 3×3 / 4×3 / 4×4 で切り替わります。それぞれ別々に並びを覚えています。</p>
+    <p>左上の 3×3 / 4×3 / 4×4 / 5×4 / 6×5 で切り替わります。それぞれ別々に並びを覚えています。</p>
+    <h2>組み合わせを保存する</h2>
+    <p>並びを作ったら「保存」を押し、名前を付けます。あとから左の欄で選べば、その並びに戻ります。同じ名前で保存すると上書きします。</p>
+    <p>保存したあとにパッドを動かすと「未保存」と出ます。そのままにしておくと、次に選び直したときに動かすまえの並びに戻ります。残したいときは、もう一度「保存」を押してください。</p>
+    <p>組み合わせはパッドの数ごとに分かれています。4×3で作ったものは、4×3のときだけ出てきます。</p>
+    <h2>別の端末に持っていく</h2>
+    <p>組み合わせはその端末にだけ残ります。「書き出し」でファイルに出し、AirDropなどで送った先で「読み込み」を押すと、同じ組み合わせが使えます。同じ名前のものは上書きされます。</p>
     <h2>音声を増やす</h2>
     <p>音声ファイルは <code>voices</code> フォルダに、番号だけの名前で入れます。<code>01.wav</code> でも <code>001.wav</code> でも構いません。VOICEVOX の 設定 → オプション → 書き出しファイル名パターン を <code>$連番$</code> だけにしておくと、その名前で書き出されます。</p>
     <ol>
       <li>パソコンの VOICEVOX でずんだもんに喋らせ、音声を書き出します。</li>
-      <li>書き出したファイルの名前を、続きの番号（<code>28.wav</code> など）に変えて <code>voices</code> フォルダに入れます。</li>
+      <li>書き出したファイルの名前を、続きの番号（<code>36.wav</code> など）に変えて <code>voices</code> フォルダに入れます。</li>
       <li>HTML の一覧の末尾に、その表示名と色を1行足します。</li>
     </ol>
     <p>iPad から直接足したいときは、編集中にパッドを押して「この端末から音声を追加」を選んでください。追加した音声はこの端末だけに残ります。</p>
@@ -305,6 +362,20 @@ const VOICE_FILES = VOICE_LIST.map((_, i) =>
 </div>
 
 <input type="file" id="filePicker" accept="audio/*" multiple hidden>
+<input type="file" id="presetFile" accept="application/json,.json" hidden>
+
+<!-- 名前を尋ねる／確認する -->
+<div class="screen" id="askScreen" hidden>
+  <div class="card">
+    <h1 id="askTitle">名前を付ける</h1>
+    <p id="askText"></p>
+    <input type="text" id="askInput" maxlength="24" placeholder="例：バンド練習">
+    <div class="row">
+      <button class="tool" id="askCancel">やめる</button>
+      <button class="tool" id="askOk" style="background:var(--c0);border-color:var(--c0);color:#241a08;font-weight:700;">決定</button>
+    </div>
+  </div>
+</div>
 
 <script>
 "use strict";
@@ -315,10 +386,12 @@ const VOICE_FILES = VOICE_LIST.map((_, i) =>
 const LAYOUTS = {
   "3x3": {cols:3, rows:3, n:9},
   "4x3": {cols:4, rows:3, n:12},
-  "4x4": {cols:4, rows:4, n:16}
+  "4x4": {cols:4, rows:4, n:16},
+  "5x4": {cols:5, rows:4, n:20},
+  "6x5": {cols:6, rows:5, n:30}
 };
 const COLORS = ["#f2a33c","#e4695e","#56c3a0","#5aa9e6","#ad8ce8","#c3d456"];
-const STORE_KEY = "voicepad.v2";
+const STORE_KEY = "voicepad.v3";
 
 /* ------------------------------------------------------------------ */
 /* 音まわり                                                            */
@@ -454,39 +527,67 @@ let state = {
   layout: "4x3",
   master: 0.9,
   trim: true,
-  presets: {
-    "3x3": defaultPreset(9, "3x3"),
-    "4x3": defaultPreset(12, "4x3"),
-    "4x4": defaultPreset(16, "4x4")
-  }
+  saved: [],     // {name, layout, slots}
+  picked: {},    // レイアウトごとに、いま選んでいる組み合わせの名前
+  presets: buildDefaults()
 };
+
+function buildDefaults(){
+  const o = {};
+  for (const k of Object.keys(LAYOUTS)) o[k] = defaultPreset(LAYOUTS[k].n, k);
+  return o;
+}
 
 function save(){
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e){}
 }
+/* 保存データは古い形や壊れた形も来うるので、必ず整えてから使う */
+function tidySlots(arr, want){
+  let a = Array.isArray(arr) ? arr.slice(0, want) : [];
+  while (a.length < want) a.push(emptySlot());
+  return a.map(x => ({
+    id: x && x.id ? String(x.id) : null,
+    label: x && typeof x.label === "string" ? x.label : "",
+    color: x && Number.isInteger(x.color) && x.color >= 0 && x.color < COLORS.length ? x.color : 0,
+    vol: x && typeof x.vol === "number" && x.vol >= 0 && x.vol <= 1 ? x.vol : 1
+  }));
+}
+
+function tidySaved(list){
+  if (!Array.isArray(list)) return [];
+  const out = [];
+  for (const p of list){
+    if (!p || typeof p.name !== "string" || !p.name.trim()) continue;
+    if (!LAYOUTS[p.layout]) continue;
+    if (out.some(q => q.name === p.name.trim() && q.layout === p.layout)) continue;
+    out.push({name:p.name.trim(), layout:p.layout, slots:tidySlots(p.slots, LAYOUTS[p.layout].n)});
+  }
+  return out.slice(0, 60);
+}
+
 function load(){
   try {
     const raw = localStorage.getItem(STORE_KEY);
     if (!raw) return;
     const s = JSON.parse(raw);
     if (!s || !s.presets) return;
+    const presets = {};
     for (const k of Object.keys(LAYOUTS)){
-      const want = LAYOUTS[k].n;
-      let arr = Array.isArray(s.presets[k]) ? s.presets[k] : defaultPreset(want, k);
-      arr = arr.slice(0, want);
-      while (arr.length < want) arr.push(emptySlot());
-      s.presets[k] = arr.map(x => ({
-        id: x && x.id ? x.id : null,
-        label: x && typeof x.label === "string" ? x.label : "",
-        color: x && Number.isInteger(x.color) ? x.color : 0,
-        vol: x && typeof x.vol === "number" ? x.vol : 1
-      }));
+      presets[k] = Array.isArray(s.presets[k])
+        ? tidySlots(s.presets[k], LAYOUTS[k].n)
+        : defaultPreset(LAYOUTS[k].n, k);
     }
+    const picked = {};
+    if (s.picked && typeof s.picked === "object")
+      for (const k of Object.keys(LAYOUTS))
+        if (typeof s.picked[k] === "string") picked[k] = s.picked[k];
     state = {
       layout: LAYOUTS[s.layout] ? s.layout : "4x3",
       master: typeof s.master === "number" ? s.master : 0.9,
       trim: s.trim !== false,
-      presets: s.presets
+      saved: tidySaved(s.saved),
+      picked,
+      presets
     };
   } catch(e){}
 }
@@ -574,6 +675,7 @@ function slots(){ return state.presets[state.layout]; }
 
 function render(){
   const L = LAYOUTS[state.layout];
+  grid.classList.toggle("dense", L.cols >= 5);
   grid.style.gridTemplateColumns = "repeat(" + L.cols + ",1fr)";
   grid.style.gridTemplateRows = "repeat(" + L.rows + ",1fr)";
   grid.innerHTML = "";
@@ -601,6 +703,7 @@ function render(){
   document.getElementById("hint").textContent = editing
     ? "パッドをずらすと入れ替わります。軽く押すと設定を変えられます。"
     : "パッドを押すと音が鳴ります。";
+  if (typeof refreshPresets === "function") refreshPresets();
 }
 
 function flash(el){
@@ -789,6 +892,129 @@ picker.addEventListener("change", async () => {
     }
     padNote.textContent = files.length + " 件を追加しました。";
   }
+});
+
+/* ------------------------------------------------------------------ */
+/* 組み合わせ（プリセット）                                            */
+/* ------------------------------------------------------------------ */
+const presetSel = document.getElementById("presetSel");
+const dirtyMark = document.getElementById("dirty");
+
+function savedFor(layout){ return state.saved.filter(p => p.layout === layout); }
+function findPreset(name, layout){
+  return state.saved.find(p => p.name === name && p.layout === layout) || null;
+}
+function pickedName(){ return state.picked[state.layout] || ""; }
+
+function isDirty(){
+  const p = findPreset(pickedName(), state.layout);
+  if (!p) return state.saved.length > 0 || pickedName() !== "";
+  return JSON.stringify(p.slots) !== JSON.stringify(slots());
+}
+
+function refreshPresets(){
+  const list = savedFor(state.layout);
+  presetSel.innerHTML = "";
+  const none = document.createElement("option");
+  none.value = "";
+  none.textContent = list.length ? "（選んでいません）" : "（まだありません）";
+  presetSel.appendChild(none);
+  list.forEach(p => {
+    const o = document.createElement("option");
+    o.value = p.name; o.textContent = p.name;
+    presetSel.appendChild(o);
+  });
+  presetSel.value = findPreset(pickedName(), state.layout) ? pickedName() : "";
+  document.getElementById("presetDel").disabled = !presetSel.value;
+  dirtyMark.hidden = !(presetSel.value && isDirty());
+}
+
+presetSel.addEventListener("change", () => {
+  const p = findPreset(presetSel.value, state.layout);
+  if (!p){ state.picked[state.layout] = ""; save(); refreshPresets(); return; }
+  state.presets[state.layout] = JSON.parse(JSON.stringify(p.slots));
+  state.picked[state.layout] = p.name;
+  save(); render();
+});
+
+document.getElementById("presetSave").addEventListener("click", async () => {
+  const name = await ask("組み合わせを保存", "名前を付けてください。同じ名前にすると上書きします。", pickedName());
+  if (!name) return;
+  const copy = JSON.parse(JSON.stringify(slots()));
+  const exist = findPreset(name, state.layout);
+  if (exist) exist.slots = copy;
+  else state.saved.push({name, layout:state.layout, slots:copy});
+  state.picked[state.layout] = name;
+  save(); refreshPresets();
+});
+
+document.getElementById("presetDel").addEventListener("click", async () => {
+  const name = presetSel.value;
+  if (!name) return;
+  const yes = await ask("組み合わせを削除", "「" + name + "」を削除します。よろしいですか。", null);
+  if (!yes) return;
+  state.saved = state.saved.filter(p => !(p.name === name && p.layout === state.layout));
+  state.picked[state.layout] = "";
+  save(); refreshPresets();
+});
+
+document.getElementById("presetOut").addEventListener("click", () => {
+  const data = {kind:"voicepad-presets", version:1, saved:state.saved};
+  const blob = new Blob([JSON.stringify(data, null, 1)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "voicepad-presets.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+});
+
+const presetFile = document.getElementById("presetFile");
+document.getElementById("presetIn").addEventListener("click", () => presetFile.click());
+presetFile.addEventListener("change", async () => {
+  const f = presetFile.files[0];
+  presetFile.value = "";
+  if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    const incoming = tidySaved(data && data.saved);
+    if (!incoming.length){ await ask("読み込み", "組み合わせが入っていないファイルです。", null); return; }
+    let added = 0, over = 0;
+    for (const p of incoming){
+      const exist = findPreset(p.name, p.layout);
+      if (exist){ exist.slots = p.slots; over++; }
+      else { state.saved.push(p); added++; }
+    }
+    save(); refreshPresets();
+    await ask("読み込み", added + " 件を追加し、" + over + " 件を上書きしました。", null);
+  } catch(e){
+    await ask("読み込み", "このファイルは読み込めませんでした。", null);
+  }
+});
+
+/* 名前を尋ねる／確認する。text だけのときは確認、既定値を渡すと入力欄が出る */
+const askScreen = document.getElementById("askScreen");
+const askInput = document.getElementById("askInput");
+let askResolve = null;
+
+function ask(title, text, initial){
+  document.getElementById("askTitle").textContent = title;
+  document.getElementById("askText").textContent = text;
+  const wantsText = typeof initial === "string";
+  askInput.hidden = !wantsText;
+  askInput.value = wantsText ? initial : "";
+  askScreen.hidden = false;
+  if (wantsText) setTimeout(() => askInput.focus(), 40);
+  return new Promise(res => { askResolve = (v) => { askResolve = null; res(v); }; });
+}
+function closeAsk(value){
+  askScreen.hidden = true;
+  if (askResolve) askResolve(value);
+}
+document.getElementById("askOk").addEventListener("click", () =>
+  closeAsk(askInput.hidden ? true : askInput.value.trim()));
+document.getElementById("askCancel").addEventListener("click", () => closeAsk(null));
+askInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") closeAsk(askInput.value.trim());
 });
 
 /* ------------------------------------------------------------------ */
